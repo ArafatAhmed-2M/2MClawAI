@@ -3,7 +3,7 @@
 <div align="center">
   
   ![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)
-  ![License](https://img.shields.io/badge/license-MIT-green.svg)
+  ![License](https://img.shields.io/badge/license-Proprietary--NonCommercial-red.svg)
   ![Node.js](https://img.shields.io/badge/node-%3E%3D18.0.0-brightgreen.svg)
   ![TypeScript](https://img.shields.io/badge/TypeScript-Ready-blue.svg)
   ![Windows Compatible](https://img.shields.io/badge/Windows-Native-blue.svg)
@@ -62,7 +62,8 @@ Say goodbye to YAML editing and pure CLI interfaces. 2M Claw brings a beautiful 
 Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**. Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
 
 ## 📄 License
-Distributed under the MIT License. See `LICENSE` for more information.
+This project is licensed under the **2M Ecosystem Proprietary License**. 
+It is free for personal, educational, and non-commercial use. Commercial use or resale is strictly prohibited. See the `LICENSE` file for full details.
 
 ## 📬 Contact
 **Arafat Ahmed Mubin** - [futureofmyebooks@gmail.com](mailto:futureofmyebooks@gmail.com)  
