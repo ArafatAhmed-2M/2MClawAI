@@ -29,7 +29,13 @@ export class DashboardServer {
             { id: 'claude', name: 'Anthropic (Claude 3)' },
             { id: 'gemini', name: 'Google (Gemini Pro)' },
             { id: 'groq', name: 'Groq (Llama 3)' },
-            { id: 'ollama', name: 'Ollama (Local)' }
+            { id: 'ollama', name: 'Ollama (Local)' },
+            { id: 'openrouter', name: 'OpenRouter' },
+            { id: 'deepseek', name: 'DeepSeek' },
+            { id: 'cohere', name: 'Cohere' },
+            { id: 'huggingface', name: 'Hugging Face' },
+            { id: 'together', name: 'Together AI' },
+            { id: 'custom', name: 'Custom Model Endpoint' }
         ]);
     });
 
@@ -40,7 +46,14 @@ export class DashboardServer {
             CLAUDE_API_KEY: process.env.CLAUDE_API_KEY || '',
             GEMINI_API_KEY: process.env.GEMINI_API_KEY || '',
             GROQ_API_KEY: process.env.GROQ_API_KEY || '',
-            OLLAMA_ENDPOINT: process.env.OLLAMA_ENDPOINT || 'http://localhost:11434'
+            OLLAMA_ENDPOINT: process.env.OLLAMA_ENDPOINT || 'http://localhost:11434',
+            OPENROUTER_API_KEY: process.env.OPENROUTER_API_KEY || '',
+            DEEPSEEK_API_KEY: process.env.DEEPSEEK_API_KEY || '',
+            COHERE_API_KEY: process.env.COHERE_API_KEY || '',
+            HF_API_KEY: process.env.HF_API_KEY || '',
+            TOGETHER_API_KEY: process.env.TOGETHER_API_KEY || '',
+            CUSTOM_BASE_URL: process.env.CUSTOM_BASE_URL || '',
+            CUSTOM_API_KEY: process.env.CUSTOM_API_KEY || ''
         });
     });
 
@@ -54,6 +67,13 @@ export class DashboardServer {
         if(keys.GEMINI_API_KEY !== undefined) process.env.GEMINI_API_KEY = keys.GEMINI_API_KEY;
         if(keys.GROQ_API_KEY !== undefined) process.env.GROQ_API_KEY = keys.GROQ_API_KEY;
         if(keys.OLLAMA_ENDPOINT !== undefined) process.env.OLLAMA_ENDPOINT = keys.OLLAMA_ENDPOINT;
+        if(keys.OPENROUTER_API_KEY !== undefined) process.env.OPENROUTER_API_KEY = keys.OPENROUTER_API_KEY;
+        if(keys.DEEPSEEK_API_KEY !== undefined) process.env.DEEPSEEK_API_KEY = keys.DEEPSEEK_API_KEY;
+        if(keys.COHERE_API_KEY !== undefined) process.env.COHERE_API_KEY = keys.COHERE_API_KEY;
+        if(keys.HF_API_KEY !== undefined) process.env.HF_API_KEY = keys.HF_API_KEY;
+        if(keys.TOGETHER_API_KEY !== undefined) process.env.TOGETHER_API_KEY = keys.TOGETHER_API_KEY;
+        if(keys.CUSTOM_BASE_URL !== undefined) process.env.CUSTOM_BASE_URL = keys.CUSTOM_BASE_URL;
+        if(keys.CUSTOM_API_KEY !== undefined) process.env.CUSTOM_API_KEY = keys.CUSTOM_API_KEY;
 
         // Write back to .env
         let envContent = '';
@@ -76,6 +96,13 @@ export class DashboardServer {
             updateOrAdd('GEMINI_API_KEY', keys.GEMINI_API_KEY || '');
             updateOrAdd('GROQ_API_KEY', keys.GROQ_API_KEY || '');
             updateOrAdd('OLLAMA_ENDPOINT', keys.OLLAMA_ENDPOINT || 'http://localhost:11434');
+            updateOrAdd('OPENROUTER_API_KEY', keys.OPENROUTER_API_KEY || '');
+            updateOrAdd('DEEPSEEK_API_KEY', keys.DEEPSEEK_API_KEY || '');
+            updateOrAdd('COHERE_API_KEY', keys.COHERE_API_KEY || '');
+            updateOrAdd('HF_API_KEY', keys.HF_API_KEY || '');
+            updateOrAdd('TOGETHER_API_KEY', keys.TOGETHER_API_KEY || '');
+            updateOrAdd('CUSTOM_BASE_URL', keys.CUSTOM_BASE_URL || '');
+            updateOrAdd('CUSTOM_API_KEY', keys.CUSTOM_API_KEY || '');
 
             fs.writeFileSync(envPath, envContent.trim() + '\n', 'utf-8');
             res.json({ success: true });

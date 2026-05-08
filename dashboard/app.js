@@ -54,6 +54,13 @@ document.addEventListener('DOMContentLoaded', () => {
             if(keys.GEMINI_API_KEY) document.getElementById('key-gemini').value = keys.GEMINI_API_KEY;
             if(keys.GROQ_API_KEY) document.getElementById('key-groq').value = keys.GROQ_API_KEY;
             if(keys.OLLAMA_ENDPOINT) document.getElementById('key-ollama').value = keys.OLLAMA_ENDPOINT;
+            if(keys.OPENROUTER_API_KEY) document.getElementById('key-openrouter').value = keys.OPENROUTER_API_KEY;
+            if(keys.DEEPSEEK_API_KEY) document.getElementById('key-deepseek').value = keys.DEEPSEEK_API_KEY;
+            if(keys.COHERE_API_KEY) document.getElementById('key-cohere').value = keys.COHERE_API_KEY;
+            if(keys.HF_API_KEY) document.getElementById('key-hf').value = keys.HF_API_KEY;
+            if(keys.TOGETHER_API_KEY) document.getElementById('key-together').value = keys.TOGETHER_API_KEY;
+            if(keys.CUSTOM_BASE_URL) document.getElementById('key-custom-url').value = keys.CUSTOM_BASE_URL;
+            if(keys.CUSTOM_API_KEY) document.getElementById('key-custom-key').value = keys.CUSTOM_API_KEY;
         })
         .catch(err => console.log('Could not load keys.'));
 
@@ -66,7 +73,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 CLAUDE_API_KEY: document.getElementById('key-claude').value,
                 GEMINI_API_KEY: document.getElementById('key-gemini').value,
                 GROQ_API_KEY: document.getElementById('key-groq').value,
-                OLLAMA_ENDPOINT: document.getElementById('key-ollama').value
+                OLLAMA_ENDPOINT: document.getElementById('key-ollama').value,
+                OPENROUTER_API_KEY: document.getElementById('key-openrouter').value,
+                DEEPSEEK_API_KEY: document.getElementById('key-deepseek').value,
+                COHERE_API_KEY: document.getElementById('key-cohere').value,
+                HF_API_KEY: document.getElementById('key-hf').value,
+                TOGETHER_API_KEY: document.getElementById('key-together').value,
+                CUSTOM_BASE_URL: document.getElementById('key-custom-url').value,
+                CUSTOM_API_KEY: document.getElementById('key-custom-key').value
             };
             
             saveBtn.textContent = 'Saving...';
