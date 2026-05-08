@@ -14,7 +14,7 @@ export class DashboardServer {
     app.use(express.json());
 
     // Serve static frontend files
-    const dashboardPath = path.join(__dirname, '../../../dashboard');
+    const dashboardPath = path.join(__dirname, '../../dashboard');
     app.use(express.static(dashboardPath));
 
     // API Routes for Dashboard
