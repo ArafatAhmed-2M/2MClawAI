@@ -1,0 +1,49 @@
+{
+  "name": "2m-claw",
+  "version": "1.0.0",
+  "description": "Windows-friendly OpenClaw alternative with a powerful Web UI and enhanced features.",
+  "main": "dist/gateway/index.js",
+  "scripts": {
+    "start": "node dist/gateway/index.js",
+    "dev": "ts-node-dev --respawn --transpile-only src/gateway/index.ts",
+    "build": "tsc",
+    "setup": "node setup/setup.js",
+    "update": "npm run build && node dist/updater/AutoUpdater.js",
+    "doctor": "node dist/utils/doctor.js"
+  },
+  "keywords": [
+    "ai",
+    "assistant",
+    "llm",
+    "openai",
+    "claude",
+    "gemini",
+    "groq",
+    "ollama",
+    "openclaw"
+  ],
+  "author": "Arafat Ahmed Mubin (2M Ecosystem) <futureofmyebooks@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ArafatAhmed-2M/2MClawAI.git"
+  },
+  "dependencies": {
+    "axios": "^1.6.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "node-cron": "^3.0.3",
+    "socket.io": "^4.7.2",
+    "winston": "^3.11.0",
+    "yaml": "^2.3.4"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.10.4",
+    "@types/node-cron": "^3.0.11",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.3.3"
+  }
+}

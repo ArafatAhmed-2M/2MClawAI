@@ -1,0 +1,27 @@
+# 2M Claw Configuration File
+# This file configures the core gateway routing behavior
+
+gateway:
+  # The default provider to use if not specified in the request
+  default_llm: "openai"
+  
+  # How long to keep conversation history in RAM before flushing to LongTermMemory
+  memory_ttl_seconds: 3600
+  
+  # Port for the web dashboard (overrides .env if set)
+  dashboard_port: 3000
+
+proactive_mode:
+  enabled: true
+  # Check for scheduled tasks every X minutes
+  interval_minutes: 60
+
+skills:
+  # Which directories to scan for custom skills
+  directories:
+    - "./skills"
+  
+  # Allowed permissions for skills (sandbox features)
+  allow_network_requests: true
+  allow_file_system_read: true
+  allow_file_system_write: false
