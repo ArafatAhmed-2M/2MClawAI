@@ -44,4 +44,46 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         })
         .catch(err => console.log('API not running yet, using default providers.'));
+
+    // Fetch Settings
+    fetch('http://localhost:3000/api/settings/keys')
+        .then(res => res.json())
+        .then(keys => {
+            if(keys.OPENAI_API_KEY) document.getElementById('key-openai').value = keys.OPENAI_API_KEY;
+            if(keys.CLAUDE_API_KEY) document.getElementById('key-claude').value = keys.CLAUDE_API_KEY;
+            if(keys.GEMINI_API_KEY) document.getElementById('key-gemini').value = keys.GEMINI_API_KEY;
+            if(keys.GROQ_API_KEY) document.getElementById('key-groq').value = keys.GROQ_API_KEY;
+            if(keys.OLLAMA_ENDPOINT) document.getElementById('key-ollama').value = keys.OLLAMA_ENDPOINT;
+        })
+        .catch(err => console.log('Could not load keys.'));
+
+    // Save Settings
+    const saveBtn = document.getElementById('save-keys-btn');
+    if (saveBtn) {
+        saveBtn.addEventListener('click', () => {
+            const keys = {
+                OPENAI_API_KEY: document.getElementById('key-openai').value,
+                CLAUDE_API_KEY: document.getElementById('key-claude').value,
+                GEMINI_API_KEY: document.getElementById('key-gemini').value,
+                GROQ_API_KEY: document.getElementById('key-groq').value,
+                OLLAMA_ENDPOINT: document.getElementById('key-ollama').value
+            };
+            
+            saveBtn.textContent = 'Saving...';
+            fetch('http://localhost:3000/api/settings/keys', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(keys)
+            })
+            .then(res => res.json())
+            .then(data => {
+                saveBtn.textContent = 'Saved!';
+                setTimeout(() => saveBtn.textContent = 'Save Changes', 2000);
+            })
+            .catch(err => {
+                saveBtn.textContent = 'Error!';
+                setTimeout(() => saveBtn.textContent = 'Save Changes', 2000);
+            });
+        });
+    }
 });
