@@ -24,18 +24,23 @@ export class DashboardServer {
     });
 
     app.get('/api/llm/providers', (req, res) => {
+        const getModels = (envStr: string, defaultModels: string) => {
+            const str = process.env[envStr] === undefined ? defaultModels : process.env[envStr];
+            return str.split(',').map(s => s.trim()).filter(Boolean).map(id => ({ id, name: id }));
+        };
+
         res.json([
-            { id: 'openai', name: 'OpenAI (GPT-4)' },
-            { id: 'claude', name: 'Anthropic (Claude 3)' },
-            { id: 'gemini', name: 'Google (Gemini Pro)' },
-            { id: 'groq', name: 'Groq (Llama 3)' },
-            { id: 'ollama', name: 'Ollama (Local)' },
-            { id: 'openrouter', name: 'OpenRouter' },
-            { id: 'deepseek', name: 'DeepSeek' },
-            { id: 'cohere', name: 'Cohere' },
-            { id: 'huggingface', name: 'Hugging Face' },
-            { id: 'together', name: 'Together AI' },
-            { id: 'custom', name: 'Custom Model Endpoint' }
+            { id: 'openai', name: 'OpenAI', models: getModels('OPENAI_MODELS', 'gpt-4o,gpt-5-turbo') },
+            { id: 'claude', name: 'Anthropic (Claude)', models: getModels('CLAUDE_MODELS', 'claude-3-opus,claude-3-sonnet') },
+            { id: 'gemini', name: 'Google (Gemini)', models: getModels('GEMINI_MODELS', 'gemini-3.1-pro-preview,gemini-3-flash-preview,gemini-3.1-flash-lite,gemini-3.1-flash-image-preview') },
+            { id: 'groq', name: 'Groq', models: getModels('GROQ_MODELS', 'llama3-70b-8192,llama3-8b-8192') },
+            { id: 'ollama', name: 'Ollama', models: getModels('OLLAMA_MODELS', 'llama3,mistral') },
+            { id: 'openrouter', name: 'OpenRouter', models: getModels('OPENROUTER_MODELS', 'nvidia/nemotron-3-super-120b-a12b:free,openai/gpt-oss-120b:free,google/gemma-4-26b-a4b-it:free,z-ai/glm-5.1') },
+            { id: 'deepseek', name: 'DeepSeek', models: getModels('DEEPSEEK_MODELS', 'deepseek-chat,deepseek-coder') },
+            { id: 'cohere', name: 'Cohere', models: getModels('COHERE_MODELS', 'command-r-plus,command-r') },
+            { id: 'huggingface', name: 'Hugging Face', models: getModels('HF_MODELS', 'meta-llama/Llama-3-70b-chat-hf') },
+            { id: 'together', name: 'Together AI', models: getModels('TOGETHER_MODELS', 'meta-llama/Llama-3-70b-chat-hf') },
+            { id: 'custom', name: 'Custom Endpoint', models: getModels('CUSTOM_MODELS', '') }
         ]);
     });
 
@@ -53,7 +58,18 @@ export class DashboardServer {
             HF_API_KEY: process.env.HF_API_KEY || '',
             TOGETHER_API_KEY: process.env.TOGETHER_API_KEY || '',
             CUSTOM_BASE_URL: process.env.CUSTOM_BASE_URL || '',
-            CUSTOM_API_KEY: process.env.CUSTOM_API_KEY || ''
+            CUSTOM_API_KEY: process.env.CUSTOM_API_KEY || '',
+            OPENAI_MODELS: process.env.OPENAI_MODELS || 'gpt-4o,gpt-5-turbo',
+            CLAUDE_MODELS: process.env.CLAUDE_MODELS || 'claude-3-opus,claude-3-sonnet',
+            GEMINI_MODELS: process.env.GEMINI_MODELS || 'gemini-3.1-pro-preview,gemini-3-flash-preview,gemini-3.1-flash-lite,gemini-3.1-flash-image-preview',
+            GROQ_MODELS: process.env.GROQ_MODELS || 'llama3-70b-8192,llama3-8b-8192',
+            OLLAMA_MODELS: process.env.OLLAMA_MODELS || 'llama3,mistral',
+            OPENROUTER_MODELS: process.env.OPENROUTER_MODELS || 'nvidia/nemotron-3-super-120b-a12b:free,openai/gpt-oss-120b:free,google/gemma-4-26b-a4b-it:free,z-ai/glm-5.1',
+            DEEPSEEK_MODELS: process.env.DEEPSEEK_MODELS || 'deepseek-chat,deepseek-coder',
+            COHERE_MODELS: process.env.COHERE_MODELS || 'command-r-plus,command-r',
+            HF_MODELS: process.env.HF_MODELS || 'meta-llama/Llama-3-70b-chat-hf',
+            TOGETHER_MODELS: process.env.TOGETHER_MODELS || 'meta-llama/Llama-3-70b-chat-hf',
+            CUSTOM_MODELS: process.env.CUSTOM_MODELS || ''
         });
     });
 
@@ -74,6 +90,18 @@ export class DashboardServer {
         if(keys.TOGETHER_API_KEY !== undefined) process.env.TOGETHER_API_KEY = keys.TOGETHER_API_KEY;
         if(keys.CUSTOM_BASE_URL !== undefined) process.env.CUSTOM_BASE_URL = keys.CUSTOM_BASE_URL;
         if(keys.CUSTOM_API_KEY !== undefined) process.env.CUSTOM_API_KEY = keys.CUSTOM_API_KEY;
+
+        if(keys.OPENAI_MODELS !== undefined) process.env.OPENAI_MODELS = keys.OPENAI_MODELS;
+        if(keys.CLAUDE_MODELS !== undefined) process.env.CLAUDE_MODELS = keys.CLAUDE_MODELS;
+        if(keys.GEMINI_MODELS !== undefined) process.env.GEMINI_MODELS = keys.GEMINI_MODELS;
+        if(keys.GROQ_MODELS !== undefined) process.env.GROQ_MODELS = keys.GROQ_MODELS;
+        if(keys.OLLAMA_MODELS !== undefined) process.env.OLLAMA_MODELS = keys.OLLAMA_MODELS;
+        if(keys.OPENROUTER_MODELS !== undefined) process.env.OPENROUTER_MODELS = keys.OPENROUTER_MODELS;
+        if(keys.DEEPSEEK_MODELS !== undefined) process.env.DEEPSEEK_MODELS = keys.DEEPSEEK_MODELS;
+        if(keys.COHERE_MODELS !== undefined) process.env.COHERE_MODELS = keys.COHERE_MODELS;
+        if(keys.HF_MODELS !== undefined) process.env.HF_MODELS = keys.HF_MODELS;
+        if(keys.TOGETHER_MODELS !== undefined) process.env.TOGETHER_MODELS = keys.TOGETHER_MODELS;
+        if(keys.CUSTOM_MODELS !== undefined) process.env.CUSTOM_MODELS = keys.CUSTOM_MODELS;
 
         // Write back to .env
         let envContent = '';
@@ -103,6 +131,18 @@ export class DashboardServer {
             updateOrAdd('TOGETHER_API_KEY', keys.TOGETHER_API_KEY || '');
             updateOrAdd('CUSTOM_BASE_URL', keys.CUSTOM_BASE_URL || '');
             updateOrAdd('CUSTOM_API_KEY', keys.CUSTOM_API_KEY || '');
+
+            updateOrAdd('OPENAI_MODELS', keys.OPENAI_MODELS || '');
+            updateOrAdd('CLAUDE_MODELS', keys.CLAUDE_MODELS || '');
+            updateOrAdd('GEMINI_MODELS', keys.GEMINI_MODELS || '');
+            updateOrAdd('GROQ_MODELS', keys.GROQ_MODELS || '');
+            updateOrAdd('OLLAMA_MODELS', keys.OLLAMA_MODELS || '');
+            updateOrAdd('OPENROUTER_MODELS', keys.OPENROUTER_MODELS || '');
+            updateOrAdd('DEEPSEEK_MODELS', keys.DEEPSEEK_MODELS || '');
+            updateOrAdd('COHERE_MODELS', keys.COHERE_MODELS || '');
+            updateOrAdd('HF_MODELS', keys.HF_MODELS || '');
+            updateOrAdd('TOGETHER_MODELS', keys.TOGETHER_MODELS || '');
+            updateOrAdd('CUSTOM_MODELS', keys.CUSTOM_MODELS || '');
 
             fs.writeFileSync(envPath, envContent.trim() + '\n', 'utf-8');
             res.json({ success: true });

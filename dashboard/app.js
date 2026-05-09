@@ -37,10 +37,15 @@ document.addEventListener('DOMContentLoaded', () => {
         .then(providers => {
             llmSelect.innerHTML = '';
             providers.forEach(p => {
-                const opt = document.createElement('option');
-                opt.value = p.id;
-                opt.textContent = p.name;
-                llmSelect.appendChild(opt);
+                const optGroup = document.createElement('optgroup');
+                optGroup.label = p.name;
+                p.models.forEach(m => {
+                    const opt = document.createElement('option');
+                    opt.value = `${p.id}:${m.id}`; // Store both provider and model
+                    opt.textContent = m.name;
+                    optGroup.appendChild(opt);
+                });
+                llmSelect.appendChild(optGroup);
             });
         })
         .catch(err => console.log('API not running yet, using default providers.'));
@@ -61,6 +66,18 @@ document.addEventListener('DOMContentLoaded', () => {
             if(keys.TOGETHER_API_KEY) document.getElementById('key-together').value = keys.TOGETHER_API_KEY;
             if(keys.CUSTOM_BASE_URL) document.getElementById('key-custom-url').value = keys.CUSTOM_BASE_URL;
             if(keys.CUSTOM_API_KEY) document.getElementById('key-custom-key').value = keys.CUSTOM_API_KEY;
+
+            if(keys.OPENAI_MODELS) document.getElementById('models-openai').value = keys.OPENAI_MODELS;
+            if(keys.CLAUDE_MODELS) document.getElementById('models-claude').value = keys.CLAUDE_MODELS;
+            if(keys.GEMINI_MODELS) document.getElementById('models-gemini').value = keys.GEMINI_MODELS;
+            if(keys.GROQ_MODELS) document.getElementById('models-groq').value = keys.GROQ_MODELS;
+            if(keys.OLLAMA_MODELS) document.getElementById('models-ollama').value = keys.OLLAMA_MODELS;
+            if(keys.OPENROUTER_MODELS) document.getElementById('models-openrouter').value = keys.OPENROUTER_MODELS;
+            if(keys.DEEPSEEK_MODELS) document.getElementById('models-deepseek').value = keys.DEEPSEEK_MODELS;
+            if(keys.COHERE_MODELS) document.getElementById('models-cohere').value = keys.COHERE_MODELS;
+            if(keys.HF_MODELS) document.getElementById('models-hf').value = keys.HF_MODELS;
+            if(keys.TOGETHER_MODELS) document.getElementById('models-together').value = keys.TOGETHER_MODELS;
+            if(keys.CUSTOM_MODELS) document.getElementById('models-custom').value = keys.CUSTOM_MODELS;
         })
         .catch(err => console.log('Could not load keys.'));
 
@@ -80,7 +97,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 HF_API_KEY: document.getElementById('key-hf').value,
                 TOGETHER_API_KEY: document.getElementById('key-together').value,
                 CUSTOM_BASE_URL: document.getElementById('key-custom-url').value,
-                CUSTOM_API_KEY: document.getElementById('key-custom-key').value
+                CUSTOM_API_KEY: document.getElementById('key-custom-key').value,
+                OPENAI_MODELS: document.getElementById('models-openai').value,
+                CLAUDE_MODELS: document.getElementById('models-claude').value,
+                GEMINI_MODELS: document.getElementById('models-gemini').value,
+                GROQ_MODELS: document.getElementById('models-groq').value,
+                OLLAMA_MODELS: document.getElementById('models-ollama').value,
+                OPENROUTER_MODELS: document.getElementById('models-openrouter').value,
+                DEEPSEEK_MODELS: document.getElementById('models-deepseek').value,
+                COHERE_MODELS: document.getElementById('models-cohere').value,
+                HF_MODELS: document.getElementById('models-hf').value,
+                TOGETHER_MODELS: document.getElementById('models-together').value,
+                CUSTOM_MODELS: document.getElementById('models-custom').value
             };
             
             saveBtn.textContent = 'Saving...';
