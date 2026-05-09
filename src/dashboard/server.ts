@@ -191,17 +191,17 @@ export class DashboardServer {
           if (commandStr) {
             try {
               const cmd = JSON.parse(commandStr);
-              // Allow absolute paths and workspace paths
-              const targetPath = path.resolve(process.cwd(), cmd.path);
+              // Allow absolute paths and workspace paths (only if path is provided)
+              const targetPath = cmd.path ? path.resolve(process.cwd(), cmd.path) : '';
               
-              if (cmd.action === 'write_file') {
+              if (cmd.action === 'write_file' && targetPath) {
                 fs.mkdirSync(path.dirname(targetPath), { recursive: true });
                 fs.writeFileSync(targetPath, cmd.content || '', 'utf-8');
                 socket.emit('log', { message: `✅ [Agent OS] Executed write_file: ${cmd.path}` });
-              } else if (cmd.action === 'read_file') {
+              } else if (cmd.action === 'read_file' && targetPath) {
                 const content = fs.readFileSync(targetPath, 'utf-8');
                 socket.emit('log', { message: `✅ [Agent OS] Read file: ${cmd.path}\n\n${content.substring(0, 500)}${content.length > 500 ? '...' : ''}` });
-              } else if (cmd.action === 'delete_file') {
+              } else if (cmd.action === 'delete_file' && targetPath) {
                 fs.unlinkSync(targetPath);
                 socket.emit('log', { message: `✅ [Agent OS] Deleted file: ${cmd.path}` });
               } else if (cmd.action === 'memorize') {

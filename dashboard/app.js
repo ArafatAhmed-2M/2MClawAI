@@ -142,6 +142,90 @@ document.addEventListener('DOMContentLoaded', () => {
         const chatBox = document.getElementById('chat-box');
         const emptyState = document.getElementById('empty-state');
 
+        // Feature Elements
+        const btnAttach = document.getElementById('btn-attach');
+        const fileUpload = document.getElementById('file-upload');
+        const attachmentContainer = document.getElementById('attachment-container');
+        const btnVoice = document.getElementById('btn-voice');
+
+        let attachedFileContent = null;
+        let attachedFileName = null;
+
+        // Attachment Logic
+        if (btnAttach && fileUpload) {
+            btnAttach.addEventListener('click', () => fileUpload.click());
+            
+            fileUpload.addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    attachedFileContent = ev.target.result;
+                    attachedFileName = file.name;
+                    
+                    attachmentContainer.innerHTML = `
+                        <div class="attachment-badge">
+                            <i class='bx bx-file'></i> ${file.name}
+                            <i class='bx bx-x' id="remove-attachment" title="Remove"></i>
+                        </div>
+                    `;
+                    document.getElementById('remove-attachment').addEventListener('click', () => {
+                        attachedFileContent = null;
+                        attachedFileName = null;
+                        attachmentContainer.innerHTML = '';
+                        fileUpload.value = '';
+                    });
+                };
+                reader.readAsText(file);
+            });
+        }
+
+        // Voice Logic (Web Speech API)
+        let recognition = null;
+        let isRecording = false;
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = true;
+            
+            recognition.onstart = () => {
+                isRecording = true;
+                if(btnVoice) btnVoice.classList.add('pulse-record');
+            };
+            
+            recognition.onresult = (event) => {
+                let interimTranscript = '';
+                let finalTranscript = '';
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    if (event.results[i].isFinal) {
+                        finalTranscript += event.results[i][0].transcript;
+                    } else {
+                        interimTranscript += event.results[i][0].transcript;
+                    }
+                }
+                chatInput.value = finalTranscript || interimTranscript;
+            };
+            
+            recognition.onend = () => {
+                isRecording = false;
+                if(btnVoice) btnVoice.classList.remove('pulse-record');
+            };
+            
+            if (btnVoice) {
+                btnVoice.addEventListener('click', () => {
+                    if (isRecording) {
+                        recognition.stop();
+                    } else {
+                        recognition.start();
+                    }
+                });
+            }
+        } else {
+            if (btnVoice) btnVoice.style.display = 'none';
+        }
+
         const appendMessage = (role, text, meta) => {
             if (emptyState && !emptyState.classList.contains('hidden')) {
                 emptyState.classList.add('hidden');
@@ -177,11 +261,26 @@ document.addEventListener('DOMContentLoaded', () => {
         let thinkingDiv = null;
 
         const sendMessage = () => {
-            if (!chatInput.value.trim() || isThinking) return;
-            const msg = chatInput.value.trim();
+            if (!chatInput.value.trim() && !attachedFileContent) return;
+            if (isThinking) return;
+            
+            let userDisplayMsg = chatInput.value.trim();
+            let msg = userDisplayMsg;
             chatInput.value = '';
             
-            appendMessage('user', msg);
+            // Handle Attachment
+            if (attachedFileContent) {
+                msg += `\n\n[Attached File: ${attachedFileName}]\n\`\`\`\n${attachedFileContent}\n\`\`\``;
+                userDisplayMsg = userDisplayMsg ? `${userDisplayMsg}\n\n📎 ${attachedFileName}` : `📎 ${attachedFileName}`;
+                
+                // Clear attachment
+                attachedFileContent = null;
+                attachedFileName = null;
+                attachmentContainer.innerHTML = '';
+                fileUpload.value = '';
+            }
+            
+            appendMessage('user', userDisplayMsg);
             
             const selection = llmSelect.value;
             if (!selection || !selection.includes(':')) {
@@ -227,6 +326,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 thinkingDiv = null;
             }
             appendMessage('ai', data.message, `Generated by ${data.provider} (${data.model})`);
+            
+            // Native Audio Voice (Text-to-Speech)
+            if ('speechSynthesis' in window) {
+                // Strip simple markdown for cleaner speech
+                const cleanText = data.message.replace(/[*#`]/g, '');
+                const utterance = new SpeechSynthesisUtterance(cleanText);
+                window.speechSynthesis.speak(utterance);
+            }
         });
 
         socket.on('chat_error', (data) => {

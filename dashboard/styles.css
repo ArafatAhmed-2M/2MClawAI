@@ -153,3 +153,35 @@ input:checked + .slider { background-color: var(--accent-solid); border-color: v
 input:checked + .slider:before { transform: translateX(22px); background-color: white;}
 .slider.round { border-radius: 34px; }
 .slider.round:before { border-radius: 50%; }
+
+/* Feature UI Additions */
+@keyframes pulse-red {
+    0% { background-color: var(--bg-void); color: white; transform: scale(1); }
+    50% { background-color: rgba(255, 50, 50, 0.2); color: #ff4444; transform: scale(1.1); box-shadow: 0 0 15px rgba(255, 50, 50, 0.4); }
+    100% { background-color: var(--bg-void); color: white; transform: scale(1); }
+}
+
+.pulse-record {
+    animation: pulse-red 1.5s infinite;
+    border-color: #ff4444 !important;
+}
+
+.attachment-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(139, 92, 246, 0.15);
+    border: 1px solid var(--accent-solid);
+    color: var(--accent-solid);
+    padding: 0.4rem 0.8rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+}
+.attachment-badge i.bx-x {
+    cursor: pointer;
+    font-size: 1.1rem;
+}
+.attachment-badge i.bx-x:hover {
+    color: white;
+}

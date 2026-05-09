@@ -62,10 +62,12 @@
             </div>
 
             <div class="input-wrapper">
+                <div id="attachment-container"></div>
                 <div class="chat-input-area">
                     <div class="input-actions">
-                        <button class="input-btn" title="Upload File (Coming Soon)"><i class='bx bx-paperclip'></i></button>
-                        <button class="input-btn" title="Voice Mode (Coming Soon)"><i class='bx bx-microphone'></i></button>
+                        <input type="file" id="file-upload" accept=".txt,.js,.ts,.html,.css,.json,.md,.csv,.py,.java,.c,.cpp" style="display: none;">
+                        <button class="input-btn" id="btn-attach" title="Upload File"><i class='bx bx-paperclip'></i></button>
+                        <button class="input-btn" id="btn-voice" title="Voice Mode"><i class='bx bx-microphone'></i></button>
                     </div>
                     <input type="text" id="chat-input" placeholder="Message Assistant (Enter to send)...">
                     <button id="chat-send-btn" class="send-btn"><i class='bx bxs-send'></i></button>
