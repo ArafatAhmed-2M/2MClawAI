@@ -4,6 +4,7 @@ import path from 'path';
 import fs from 'fs';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
+import { LLMService } from '../llm/LLMService';
 
 export class DashboardServer {
   public static start(port: number) {
@@ -156,6 +157,17 @@ export class DashboardServer {
     io.on('connection', (socket) => {
       console.log('🔌 Dashboard client connected.');
       socket.emit('log', { message: 'Connected to 2M Claw Backend' });
+
+      socket.on('chat_message', async (data) => {
+        const { provider, model, message } = data;
+        try {
+          socket.emit('chat_status', { status: 'thinking' });
+          const reply = await LLMService.generateResponse(provider, model, message);
+          socket.emit('chat_response', { message: reply, provider, model });
+        } catch (err: any) {
+          socket.emit('chat_error', { message: err.message || 'Unknown error occurred.' });
+        }
+      });
     });
 
     server.listen(port, () => {

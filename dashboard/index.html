@@ -42,8 +42,8 @@
                 <div class="message system">2M Claw initialization complete. Awaiting connections...</div>
             </div>
             <div class="chat-input-area">
-                <input type="text" placeholder="Send a test message to the Gateway..." disabled>
-                <button disabled>Send</button>
+                <input type="text" id="chat-input" placeholder="Send a message to the AI Gateway...">
+                <button id="chat-send-btn">Send</button>
             </div>
         </section>
 
@@ -225,6 +225,7 @@
             </div>
         </section>
     </main>
+    <script src="/socket.io/socket.io.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
