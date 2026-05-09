@@ -58,6 +58,14 @@ Say goodbye to YAML editing and pure CLI interfaces. 2M Claw brings a beautiful 
 - [Detailed Features](./docs/FEATURES.md)
 - [Creating Custom Skills](./docs/CREATING_SKILLS.md)
 
+## 🛠️ Maintenance & Stability
+
+2M Claw includes built-in diagnostic tools to ensure your system is running correctly:
+
+- **System Doctor**: Run `npm run doctor` to check Node.js version, API key status, and directory permissions.
+- **Dynamic Skill Loading**: Simply drop `.js` files into the `/skills` folder and they will be automatically loaded on the next start.
+- **Automation Engine**: Full support for custom cron jobs via the Web UI, integrated directly into the LLM logic.
+
 ## 🤝 Contributing
 Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**. Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
 

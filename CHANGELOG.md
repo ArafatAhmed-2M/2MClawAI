@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] - 2026-05-09
+### Added
+- New `doctor` utility for system diagnostics (`npm run doctor`).
+- Dynamic `SkillLoader` to load custom logic from the `/skills` directory.
+- Fully functional Automation & Cron UI integration.
+- Relative API paths in Dashboard for better portability.
+
+### Fixed
+- Property initialization errors in `CronManager` and `SkillLoader`.
+- Hardcoded `localhost:3000` URLs in the frontend.
+- Singleton pattern implementation in core services.
+
 ## [1.0.0] - Initial Release
 ### Added
 - Complete TypeScript backend architecture.

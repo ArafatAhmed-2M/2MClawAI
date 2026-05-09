@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Fetch Providers dynamically
-    fetch('http://localhost:3000/api/llm/providers')
+    fetch('/api/llm/providers')
         .then(res => res.json())
         .then(providers => {
             llmSelect.innerHTML = '';
@@ -51,7 +51,7 @@ document.addEventListener('DOMContentLoaded', () => {
         .catch(err => console.log('API not running yet, using default providers.'));
 
     // Fetch Settings
-    fetch('http://localhost:3000/api/settings/keys')
+    fetch('/api/settings/keys')
         .then(res => res.json())
         .then(keys => {
             if(keys.OPENAI_API_KEY) document.getElementById('key-openai').value = keys.OPENAI_API_KEY;
@@ -116,7 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
             };
             
             saveBtn.textContent = 'Saving...';
-            fetch('http://localhost:3000/api/settings/keys', {
+            fetch('/api/settings/keys', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(keys)
@@ -151,7 +151,7 @@ document.addEventListener('DOMContentLoaded', () => {
             btn.innerHTML = `<i class='bx bx-loader-alt bx-spin'></i> Connecting...`;
             if (msg) { msg.textContent = 'Connecting...'; msg.style.color = 'var(--text-muted)'; }
 
-            fetch(`http://localhost:3000/api/${platform}/connect`, {
+            fetch(`/api/${platform}/connect`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ token })
@@ -400,64 +400,104 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- AGENTIC APP STORE INTERACTIVITY ---
-    
-    // Simulate Skill Installation
-    const installButtons = document.querySelectorAll('#view-skills .card button');
-    const toastNotification = document.getElementById('toast-notification');
-    const toastText = document.getElementById('toast-text');
+    // --- AUTOMATION & CRON LOGIC ---
+    const cronListContainer = document.querySelector('#view-cron .list-container');
+    const btnNewCron = document.querySelector('#view-cron .btn-primary');
 
-    installButtons.forEach(btn => {
-        if (btn.textContent.includes('Install')) {
-            btn.addEventListener('click', function() {
-                const cardTitle = this.parentElement.querySelector('h3').textContent.trim();
-                
-                // Set to loading state
-                this.innerHTML = `<i class='bx bx-loader-alt bx-spin'></i> Installing...`;
-                this.style.opacity = '0.7';
-                this.style.pointerEvents = 'none';
+    const loadCronJobs = () => {
+        fetch('/api/cron/jobs')
+            .then(res => res.json())
+            .then(jobs => {
+                cronListContainer.innerHTML = '';
+                if (jobs.length === 0) {
+                    cronListContainer.innerHTML = '<p style="color:var(--text-muted); padding:1rem;">No automation tasks configured.</p>';
+                    return;
+                }
+                jobs.forEach(job => {
+                    const item = document.createElement('div');
+                    item.className = 'list-item';
+                    item.innerHTML = `
+                        <div>
+                            <h4 style="font-size:1.1rem;margin-bottom:0.3rem;"><i class='bx bx-news'></i> ${job.name}</h4>
+                            <p class="meta" style="font-size:0.85rem;">Schedule: ${job.schedule}</p>
+                            <p class="meta" style="font-size:0.75rem; opacity:0.6; margin-top:0.2rem;">Prompt: ${job.prompt.substring(0, 50)}...</p>
+                        </div>
+                        <div style="display:flex; align-items:center; gap:1rem;">
+                            <button class="btn-delete" data-id="${job.id}" style="background:none; border:none; color:#ef4444; cursor:pointer; font-size:1.2rem;"><i class='bx bx-trash'></i></button>
+                            <label class="switch">
+                                <input type="checkbox" class="cron-toggle" data-id="${job.id}" ${job.active ? 'checked' : ''}>
+                                <span class="slider round"></span>
+                            </label>
+                        </div>
+                    `;
+                    cronListContainer.appendChild(item);
+                });
 
-                // Simulate 2-second install delay
-                setTimeout(() => {
-                    this.innerHTML = `<i class='bx bx-check-shield'></i> Installed`;
-                    this.style.background = 'var(--bg-surface)';
-                    this.style.borderColor = 'var(--border)';
-                    this.style.color = 'var(--text-muted)';
-                    this.style.opacity = '1';
-                    
-                    // Show Toast Notification
-                    if (toastNotification && toastText) {
-                        toastText.textContent = `${cardTitle} installed successfully!`;
-                        toastNotification.style.bottom = '2rem';
-                        
-                        setTimeout(() => {
-                            toastNotification.style.bottom = '-100px';
-                        }, 3000);
-                    }
-                }, 2000);
+                // Add Toggle Listeners
+                document.querySelectorAll('.cron-toggle').forEach(toggle => {
+                    toggle.addEventListener('change', (e) => {
+                        const id = e.target.getAttribute('data-id');
+                        const active = e.target.checked;
+                        fetch(`/api/cron/jobs/${id}/toggle`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ active })
+                        });
+                    });
+                });
+
+                // Add Delete Listeners
+                document.querySelectorAll('.btn-delete').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const id = btn.getAttribute('data-id');
+                        if (confirm('Delete this automation task?')) {
+                            fetch(`/api/cron/jobs/${id}`, { method: 'DELETE' })
+                                .then(() => loadCronJobs());
+                        }
+                    });
+                });
             });
-        }
-    });
+    };
 
-    // Community Hub Modal Logic
-    const btnCommunityHub = document.getElementById('btn-community-hub');
-    const communityModal = document.getElementById('community-modal');
-    const closeModal = document.getElementById('close-modal');
-
-    if (btnCommunityHub && communityModal && closeModal) {
-        btnCommunityHub.addEventListener('click', () => {
-            communityModal.style.display = 'flex';
-        });
-
-        closeModal.addEventListener('click', () => {
-            communityModal.style.display = 'none';
-        });
-
-        // Close on outside click
-        communityModal.addEventListener('click', (e) => {
-            if (e.target === communityModal) {
-                communityModal.style.display = 'none';
+    if (btnNewCron) {
+        btnNewCron.addEventListener('click', () => {
+            const name = prompt('Task Name:');
+            const schedule = prompt('Cron Schedule (e.g. 0 9 * * *):');
+            const promptStr = prompt('AI Prompt for this task:');
+            
+            if (name && schedule && promptStr) {
+                fetch('/api/cron/jobs', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, schedule, prompt: promptStr })
+                }).then(() => loadCronJobs());
             }
         });
     }
+
+    // --- SKILLS DYNAMIC LOADING ---
+    const skillsGrid = document.querySelector('#view-skills .grid-container');
+    const loadSkills = () => {
+        fetch('/api/skills')
+            .then(res => res.json())
+            .then(skills => {
+                // We keep the static ones in HTML for visual density, but we can append custom ones
+                skills.forEach(skill => {
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    card.style.borderColor = 'var(--primary)';
+                    card.innerHTML = `
+                        <h3><i class='bx bx-plug'></i> ${skill.name}</h3>
+                        <p>${skill.description}</p>
+                        <p class="meta" style="font-size:0.7rem; color:var(--primary);">Triggers: ${skill.triggers.join(', ')}</p>
+                        <button class="btn-outline">Installed</button>
+                    `;
+                    skillsGrid.prepend(card);
+                });
+            });
+    };
+
+    // Initial Load
+    loadCronJobs();
+    loadSkills();
 });

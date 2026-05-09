@@ -8,6 +8,9 @@ import { TelegramBot } from '../bots/TelegramBot';
 import { BotRegistry } from '../bots/BotRegistry';
 import { DreamingEngine } from '../memory/DreamingEngine';
 
+import { globalCronManager } from '../memory/CronManager';
+import { globalSkillLoader } from '../skills/SkillLoader';
+
 dotenv.config();
 
 export class GatewayManager {
@@ -42,6 +45,12 @@ export class GatewayManager {
 
     console.log('🧠 Loading memory system...');
     await this.memory.initialize();
+
+    console.log('🕒 Starting automation cron jobs...');
+    globalCronManager.startAll();
+
+    console.log('🔌 Loading custom skills...');
+    globalSkillLoader.loadSkills();
 
     console.log('🕒 Starting proactive agent scheduler...');
     this.proactiveAgent.start();

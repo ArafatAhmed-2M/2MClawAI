@@ -7,6 +7,8 @@ import { Server } from 'socket.io';
 import { LLMService } from '../llm/LLMService';
 import { globalMemory } from '../memory/LongTermMemory';
 import { BotRegistry } from '../bots/BotRegistry';
+import { globalCronManager } from '../memory/CronManager';
+import { globalSkillLoader } from '../skills/SkillLoader';
 
 export class DashboardServer {
   public static start(port: number) {
@@ -288,6 +290,45 @@ export class DashboardServer {
             console.error('Failed to save .env', e);
             res.status(500).json({ success: false });
         }
+    });
+
+    // --- Automation / Cron API ---
+    app.get('/api/cron/jobs', (req, res) => {
+        res.json(globalCronManager.getAllJobs());
+    });
+
+    app.post('/api/cron/jobs', (req, res) => {
+        const { name, schedule, prompt } = req.body;
+        if (!name || !schedule || !prompt) return res.status(400).json({ error: 'Missing fields' });
+        try {
+            const job = globalCronManager.addJob(name, schedule, prompt);
+            res.json(job);
+        } catch (e: any) {
+            res.status(500).json({ error: e.message });
+        }
+    });
+
+    app.post('/api/cron/jobs/:id/toggle', (req, res) => {
+        const { id } = req.params;
+        const { active } = req.body;
+        globalCronManager.toggleJob(id, active);
+        res.json({ success: true });
+    });
+
+    app.delete('/api/cron/jobs/:id', (req, res) => {
+        const { id } = req.params;
+        globalCronManager.deleteJob(id);
+        res.json({ success: true });
+    });
+
+    // --- Skills API ---
+    app.get('/api/skills', (req, res) => {
+        const skills = globalSkillLoader.getSkills().map(s => ({
+            name: s.name,
+            description: s.description,
+            triggers: s.triggers
+        }));
+        res.json(skills);
     });
 
     // WebSocket for Real-time chat history
