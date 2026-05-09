@@ -1,20 +1,27 @@
 import axios from 'axios';
+import os from 'os';
 
-const AGENT_SYSTEM_PROMPT = `You are 2M Claw, an autonomous AI operating system. 
+export class LLMService {
+  private static getAgentSystemPrompt(): string {
+    return `You are 2M Claw, an autonomous AI operating system. 
 You can write code, edit files, and execute system commands.
 If the user asks you to read, edit, or delete a file, you MUST output a JSON block wrapped in EXACTLY this format to trigger the agentic execution engine:
 
 \`\`\`system_command
 {
   "action": "write_file",
-  "path": "relative/path/to/file.ext",
+  "path": "absolute/or/relative/path/to/file.ext",
   "content": "file content here if writing"
 }
 \`\`\`
 
-When you output this block, the backend will automatically intercept it, run the command, and feed the result back to the user. Do not use this block for normal conversational replies, ONLY when modifying or interacting with the file system.`;
+ENVIRONMENT CONTEXT:
+- Current Working Directory: ${process.cwd()}
+- User Home Directory: ${os.homedir()}
 
-export class LLMService {
+When you output this block, the backend will automatically intercept it, run the command, and feed the result back to the user. Do not use this block for normal conversational replies, ONLY when modifying or interacting with the file system.`;
+  }
+
   public static async generateResponse(provider: string, model: string, prompt: string): Promise<string> {
     try {
       switch (provider) {
@@ -55,7 +62,7 @@ export class LLMService {
     const res = await axios.post(endpoint, {
       model,
       messages: [
-        { role: 'system', content: AGENT_SYSTEM_PROMPT },
+        { role: 'system', content: this.getAgentSystemPrompt() },
         { role: 'user', content: prompt }
       ]
     }, {
@@ -74,7 +81,7 @@ export class LLMService {
     if (!apiKey) throw new Error('Claude API Key missing. Please set it in Settings.');
     const res = await axios.post('https://api.anthropic.com/v1/messages', {
       model,
-      system: AGENT_SYSTEM_PROMPT,
+      system: this.getAgentSystemPrompt(),
       max_tokens: 1024,
       messages: [{ role: 'user', content: prompt }]
     }, {
@@ -92,7 +99,7 @@ export class LLMService {
     if (!apiKey) throw new Error('Gemini API Key missing. Please set it in Settings.');
     const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
     const res = await axios.post(endpoint, {
-      system_instruction: { parts: [{ text: AGENT_SYSTEM_PROMPT }] },
+      system_instruction: { parts: [{ text: this.getAgentSystemPrompt() }] },
       contents: [{ parts: [{ text: prompt }] }]
     }, {
       headers: { 'Content-Type': 'application/json' }
@@ -105,7 +112,7 @@ export class LLMService {
     const res = await axios.post(`${endpoint}/api/chat`, {
       model,
       messages: [
-        { role: 'system', content: AGENT_SYSTEM_PROMPT },
+        { role: 'system', content: this.getAgentSystemPrompt() },
         { role: 'user', content: prompt }
       ],
       stream: false
@@ -118,7 +125,7 @@ export class LLMService {
     if (!apiKey) throw new Error('Cohere API Key missing. Please set it in Settings.');
     const res = await axios.post('https://api.cohere.ai/v1/chat', {
       model,
-      preamble: AGENT_SYSTEM_PROMPT,
+      preamble: this.getAgentSystemPrompt(),
       message: prompt
     }, {
       headers: {
@@ -133,7 +140,7 @@ export class LLMService {
     const apiKey = process.env.HF_API_KEY;
     if (!apiKey) throw new Error('Hugging Face Token missing. Please set it in Settings.');
     const res = await axios.post(`https://api-inference.huggingface.co/models/${model}`, {
-      inputs: `System: ${AGENT_SYSTEM_PROMPT}\nUser: ${prompt}`,
+      inputs: `System: ${this.getAgentSystemPrompt()}\nUser: ${prompt}`,
       parameters: { max_new_tokens: 250 }
     }, {
       headers: {

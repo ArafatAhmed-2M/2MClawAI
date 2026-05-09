@@ -175,11 +175,8 @@ export class DashboardServer {
           if (commandMatch) {
             try {
               const cmd = JSON.parse(commandMatch[1]);
-              // Prevent escaping workspace by resolving path safely
+              // Allow absolute paths and workspace paths
               const targetPath = path.resolve(process.cwd(), cmd.path);
-              if (!targetPath.startsWith(process.cwd())) {
-                 throw new Error("Security Violation: Cannot access outside workspace");
-              }
               
               if (cmd.action === 'write_file') {
                 fs.mkdirSync(path.dirname(targetPath), { recursive: true });
