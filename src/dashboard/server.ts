@@ -175,7 +175,7 @@ export class DashboardServer {
         const { provider, model, message } = data;
 
         // --- Telegram Token Quick-Connect Interceptor ---
-        if (message.includes(':') && (message.toLowerCase().includes('telegram') || message.toLowerCase().includes('token'))) {
+        if (message.includes(':') && (message.toLowerCase().includes('telegram') || message.toLowerCase().includes('token') || message.toLowerCase().includes('connect'))) {
             const tokenMatch = message.match(/(\d{8,10}:[A-Za-z0-9_-]{35})/);
             if (tokenMatch) {
                 const token = tokenMatch[1];
@@ -190,7 +190,14 @@ export class DashboardServer {
                     envContent += `\nTELEGRAM_BOT_TOKEN=${token}`;
                 }
                 fs.writeFileSync(envPath, envContent.trim() + '\n', 'utf-8');
-                socket.emit('log', { message: `✈️ [Agent OS] Telegram Token saved to .env! Please restart the server to activate the bot.` });
+                
+                socket.emit('log', { message: `✈️ [Agent OS] Telegram Token saved to .env!` });
+                socket.emit('chat_response', { 
+                    message: "✅ **Telegram Token Detected!** I have securely saved this to your configuration.\n\n**To activate the bot:**\n1. Stop your server (Ctrl+C).\n2. Run `npm start` again.\n\n2M Claw will then connect to your Telegram bot automatically!",
+                    provider: "Agent OS",
+                    model: "Core Interceptor"
+                });
+                return; // Skip LLM generation
             }
         }
         // ------------------------------------------------
