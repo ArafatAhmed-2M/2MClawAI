@@ -110,7 +110,7 @@
                 <h2><i class='bx bx-bolt-circle'></i> Skill Browser (Agentic App Store)</h2>
                 <div style="display:flex; gap:0.5rem;">
                     <button class="btn-outline"><i class='bx bx-refresh'></i> Sync</button>
-                    <button class="btn-primary"><i class='bx bx-cloud-download'></i> Browse Community Hub</button>
+                    <button class="btn-primary" id="btn-community-hub"><i class='bx bx-cloud-download'></i> Browse Community Hub</button>
                 </div>
             </header>
             <div class="standard-padding">
@@ -382,7 +382,14 @@
                     <div class="card">
                         <h3><i class='bx bx-key'></i> Crypto Key Manager</h3>
                         <p>Manage, generate, and securely sign files using PGP and SSH cryptographic protocols.</p>
-                        <button class="btn-primary"><i class='bx bx-download'></i> Install</button>
+                        <button class="btn-primary btn-install"><i class='bx bx-download'></i> Install</button>
+                    </div>
+                    
+                    <!-- Paperclip AI Integration -->
+                    <div class="card" style="border-color: #6366f1;">
+                        <h3><i class='bx bx-paperclip'></i> Paperclip Orchestration</h3>
+                        <p>Open-source orchestration for zero-human companies. Advanced memory and tool chaining.</p>
+                        <button class="btn-primary btn-install"><i class='bx bx-download'></i> Install</button>
                     </div>
                 </div>
             </div>
@@ -618,6 +625,22 @@
         </section>
 
     </main>
+
+    <!-- Community Hub Modal -->
+    <div id="community-modal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(4px);">
+        <div class="modal-content" style="background: var(--bg-surface); padding: 2.5rem; border-radius: 16px; border: 1px solid var(--border); max-width: 500px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.5);">
+            <i class='bx bx-planet' style="font-size: 4rem; color: #6366f1; margin-bottom: 1rem;"></i>
+            <h2 style="margin-bottom: 1rem;">Brozo the Community Hub</h2>
+            <p style="color: var(--text-muted); margin-bottom: 2rem; line-height: 1.6;">Connecting to the OpenClaw Community Registry...<br><br>The Community Hub is currently in Beta. Official, verified 3rd-party plugins will be fully available in the next OS update. Stay tuned!</p>
+            <button id="close-modal" class="btn-primary" style="width: 100%; padding: 0.8rem;">Acknowledge</button>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast-notification" style="position: fixed; bottom: -100px; right: 2rem; background: var(--bg-surface); border: 1px solid #22c55e; border-left: 4px solid #22c55e; padding: 1rem 1.5rem; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); display: flex; align-items: center; gap: 1rem; transition: bottom 0.4s ease; z-index: 1000;">
+        <i class='bx bx-check-circle' style="font-size: 1.5rem; color: #22c55e;"></i>
+        <span id="toast-text" style="font-weight: 500;">Skill Installed!</span>
+    </div>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="/socket.io/socket.io.js"></script>
     <script src="app.js"></script>

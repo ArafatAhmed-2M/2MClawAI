@@ -399,4 +399,65 @@ document.addEventListener('DOMContentLoaded', () => {
             appendMessage('system', data.message);
         });
     }
+
+    // --- AGENTIC APP STORE INTERACTIVITY ---
+    
+    // Simulate Skill Installation
+    const installButtons = document.querySelectorAll('#view-skills .card button');
+    const toastNotification = document.getElementById('toast-notification');
+    const toastText = document.getElementById('toast-text');
+
+    installButtons.forEach(btn => {
+        if (btn.textContent.includes('Install')) {
+            btn.addEventListener('click', function() {
+                const cardTitle = this.parentElement.querySelector('h3').textContent.trim();
+                
+                // Set to loading state
+                this.innerHTML = `<i class='bx bx-loader-alt bx-spin'></i> Installing...`;
+                this.style.opacity = '0.7';
+                this.style.pointerEvents = 'none';
+
+                // Simulate 2-second install delay
+                setTimeout(() => {
+                    this.innerHTML = `<i class='bx bx-check-shield'></i> Installed`;
+                    this.style.background = 'var(--bg-surface)';
+                    this.style.borderColor = 'var(--border)';
+                    this.style.color = 'var(--text-muted)';
+                    this.style.opacity = '1';
+                    
+                    // Show Toast Notification
+                    if (toastNotification && toastText) {
+                        toastText.textContent = `${cardTitle} installed successfully!`;
+                        toastNotification.style.bottom = '2rem';
+                        
+                        setTimeout(() => {
+                            toastNotification.style.bottom = '-100px';
+                        }, 3000);
+                    }
+                }, 2000);
+            });
+        }
+    });
+
+    // Community Hub Modal Logic
+    const btnCommunityHub = document.getElementById('btn-community-hub');
+    const communityModal = document.getElementById('community-modal');
+    const closeModal = document.getElementById('close-modal');
+
+    if (btnCommunityHub && communityModal && closeModal) {
+        btnCommunityHub.addEventListener('click', () => {
+            communityModal.style.display = 'flex';
+        });
+
+        closeModal.addEventListener('click', () => {
+            communityModal.style.display = 'none';
+        });
+
+        // Close on outside click
+        communityModal.addEventListener('click', (e) => {
+            if (e.target === communityModal) {
+                communityModal.style.display = 'none';
+            }
+        });
+    }
 });
