@@ -11,7 +11,7 @@ If the user asks you to read, edit, or delete a file, OR if you learn a new impo
 
 \`\`\`system_command
 {
-  "action": "write_file" | "memorize",
+  "action": "write_file" | "memorize" | "send_file",
   "path": "absolute/or/relative/path/to/file.ext",
   "content": "file content here if writing",
   "fact": "fact to remember if memorizing"

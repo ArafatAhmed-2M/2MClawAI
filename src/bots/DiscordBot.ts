@@ -58,6 +58,49 @@ export class DiscordBot {
       
       const reply = await LLMService.generateResponse(provider, model, content);
       
+      // --- Agentic System Command Interceptor ---
+      let commandStr: string | null = null;
+      const commandMatch = reply.match(/```(?:system_command|json)?\n?([\s\S]*?)\n?```/);
+      
+      if (commandMatch && commandMatch[1].includes('"action"')) {
+          commandStr = commandMatch[1];
+      } else {
+          const fallbackMatch = reply.match(/({[\s\S]*?"action"[\s\S]*})/);
+          if (fallbackMatch) commandStr = fallbackMatch[1];
+      }
+
+      if (commandStr) {
+        try {
+          const cmd = JSON.parse(commandStr);
+          const path = require('path');
+          const fs = require('fs');
+          const { globalMemory } = require('../memory/LongTermMemory');
+
+          const targetPath = cmd.path ? path.resolve(process.cwd(), cmd.path) : '';
+          
+          if (cmd.action === 'write_file' && targetPath) {
+            fs.mkdirSync(path.dirname(targetPath), { recursive: true });
+            fs.writeFileSync(targetPath, cmd.content || '', 'utf-8');
+            await message.reply(`✅ [Agent OS] File written: ${cmd.path}`);
+          } else if (cmd.action === 'memorize') {
+            globalMemory.addFact(cmd.fact);
+            await message.reply(`🧠 [Agent OS] Fact memorized: ${cmd.fact}`);
+          } else if (cmd.action === 'send_file' && targetPath) {
+            if (fs.existsSync(targetPath)) {
+              await message.reply({ 
+                content: `📂 Here is your file: ${cmd.path}`,
+                files: [targetPath] 
+              });
+            } else {
+              await message.reply(`❌ [Agent OS] Error: File not found at ${cmd.path}`);
+            }
+          }
+        } catch (e: any) {
+          await message.reply(`❌ [Agent OS] Execution Failed: ${e.message}`);
+        }
+      }
+      // ------------------------------------------
+
       // Discord max length is 2000 chars, so split if necessary
       if (reply.length > 2000) {
         const chunks = reply.match(/[\s\S]{1,1999}/g) || [];
