@@ -107,20 +107,68 @@
         <!-- Skills View -->
         <section id="view-skills" class="view">
             <header class="view-header">
-                <h2><i class='bx bx-bolt-circle'></i> Skill Browser</h2>
-                <button class="btn-primary">Browse Web Skills</button>
+                <h2><i class='bx bx-bolt-circle'></i> Skill Browser (Agentic App Store)</h2>
+                <div style="display:flex; gap:0.5rem;">
+                    <button class="btn-outline"><i class='bx bx-refresh'></i> Sync</button>
+                    <button class="btn-primary"><i class='bx bx-cloud-download'></i> Browse Community Hub</button>
+                </div>
             </header>
             <div class="standard-padding">
+                <h3 style="margin-bottom: 1rem; color: var(--text-muted); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">Core System Skills (Pre-installed)</h3>
+                <div class="grid-container" style="margin-bottom: 2rem;">
+                    <div class="card">
+                        <h3><i class='bx bx-folder'></i> Filesystem (Read/Write)</h3>
+                        <p>Essential for local management. The agent uses these to search documents, modify code, and organize your workspace.</p>
+                        <button class="btn-primary" style="background:var(--bg-surface); border-color:var(--border); color:var(--text-muted); pointer-events:none;"><i class='bx bx-check-shield'></i> Core Skill</button>
+                    </div>
+                    <div class="card">
+                        <h3><i class='bx bx-brain'></i> memU / Persistent Memory</h3>
+                        <p>Manages long-term memory by distilling conversation logs into Markdown files so the agent remembers preferences.</p>
+                        <button class="btn-primary" style="background:var(--bg-surface); border-color:var(--border); color:var(--text-muted); pointer-events:none;"><i class='bx bx-check-shield'></i> Core Skill</button>
+                    </div>
+                    <div class="card">
+                        <h3><i class='bx bxl-telegram'></i> Messenger (TG/WhatsApp)</h3>
+                        <p>Allows you to control OpenClaw entirely via your phone instead of the local terminal interface.</p>
+                        <button class="btn-primary" style="background:var(--bg-surface); border-color:var(--border); color:var(--text-muted); pointer-events:none;"><i class='bx bx-check-shield'></i> Core Skill</button>
+                    </div>
+                </div>
+
+                <h3 style="margin-bottom: 1rem; color: var(--text-muted); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;">Advanced Automation Integrations</h3>
                 <div class="grid-container">
                     <div class="card">
-                        <h3><i class='bx bx-globe'></i> Web Search</h3>
-                        <p>Allows 2M Claw to search the internet via DuckDuckGo.</p>
+                        <h3><i class='bx bx-window-alt'></i> Agent Browser</h3>
+                        <p>The #1 tool for automation. Uses headless Playwright to navigate websites, click buttons, fill forms, and take screenshots.</p>
+                        <button class="btn-primary"><i class='bx bx-download'></i> Install</button>
+                    </div>
+                    <div class="card">
+                        <h3><i class='bx bx-code-block'></i> Code Execution (exec)</h3>
+                        <p>Allows the agent to run Python scripts or shell commands locally to perform math, data analysis, or configuration.</p>
+                        <button class="btn-primary"><i class='bx bx-download'></i> Install</button>
+                    </div>
+                    <div class="card">
+                        <h3><i class='bx bx-search-alt'></i> Exa Search</h3>
+                        <p>Replaces basic Google searches with a developer-focused neural search. Pulls data from docs and GitHub repos.</p>
                         <button class="btn-outline">Installed</button>
                     </div>
                     <div class="card">
-                        <h3><i class='bx bx-terminal'></i> File Editor</h3>
-                        <p>Agentic access to read and rewrite system files on command.</p>
-                        <button class="btn-primary">Core Skill</button>
+                        <h3><i class='bx bx-network-chart'></i> Composio Hub</h3>
+                        <p>A massive integration hub that unlocks 860+ external services like GitHub, Slack, Jira, and Gmail through one connection.</p>
+                        <button class="btn-primary"><i class='bx bx-download'></i> Install</button>
+                    </div>
+                    <div class="card">
+                        <h3><i class='bx bx-git-pull-request'></i> N8N Workflows</h3>
+                        <p>Used to trigger complex local automations. Kicks off dedicated N8N workflows to handle multi-step data transfers.</p>
+                        <button class="btn-primary"><i class='bx bx-download'></i> Install</button>
+                    </div>
+                    <div class="card">
+                        <h3><i class='bx bx-envelope'></i> Email Manager</h3>
+                        <p>Automatically scans your inbox (Gog/Himalaya), drafts replies, and flags urgent emails in your daily brief.</p>
+                        <button class="btn-primary"><i class='bx bx-download'></i> Install</button>
+                    </div>
+                    <div class="card">
+                        <h3><i class='bx bx-image-alt'></i> Recraft / Visuals</h3>
+                        <p>The primary tool for high-quality image generation and vector visual editing within the OpenClaw chat interface.</p>
+                        <button class="btn-primary"><i class='bx bx-download'></i> Install</button>
                     </div>
                 </div>
             </div>
