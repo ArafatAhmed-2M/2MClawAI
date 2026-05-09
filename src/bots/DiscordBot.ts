@@ -6,6 +6,8 @@ import { globalMemory } from '../memory/LongTermMemory';
 
 export class DiscordBot {
   private client: Client;
+  /** Tracks the last file written per channel so "send it to me" works */
+  private lastFile: Map<string, string> = new Map();
 
   constructor() {
     this.client = new Client({
@@ -38,21 +40,31 @@ export class DiscordBot {
   private async handleMessage(message: Message) {
     if (message.author.bot) return;
 
-    // Type 1 is DM
     const isDM = message.channel.type === 1;
     const isMentioned = message.mentions.has(this.client.user?.id || '');
-
     if (!isDM && !isMentioned) return;
 
     const content = message.content.replace(/<@!?\d+>/g, '').trim();
     if (!content) return;
 
+    const channelId = message.channelId;
+    const userText = content.toLowerCase();
+
     try {
-      if ('sendTyping' in message.channel) {
-        await message.channel.sendTyping();
+      if ('sendTyping' in message.channel) await message.channel.sendTyping();
+
+      // ── Shortcut: "send it to me" → send the last created file ──
+      const sendItTriggers = ['send it', 'send it to me', 'send the file', 'give it to me', 'send now'];
+      if (sendItTriggers.some(t => userText.includes(t))) {
+        const lastPath = this.lastFile.get(channelId);
+        if (lastPath && fs.existsSync(lastPath)) {
+          const attachment = new AttachmentBuilder(lastPath, { name: path.basename(lastPath) });
+          await message.reply({ content: `📂 Here is your file: \`${path.basename(lastPath)}\``, files: [attachment] });
+          return;
+        }
       }
 
-      // Auto-detect the first configured provider
+      // Auto-detect provider
       const defaultProvider = process.env.DEFAULT_PROVIDER;
       const defaultModel   = process.env.DEFAULT_MODEL;
       const { provider, model } = defaultProvider && defaultModel
@@ -62,14 +74,12 @@ export class DiscordBot {
       const rawReply = await LLMService.generateResponse(provider, model, content);
 
       // --- Agentic System Command Interceptor ---
-      const { handled, visibleReply } = await this.executeCommand(message, rawReply);
+      const { cmd, visibleReply } = this.parseCommand(rawReply);
 
-      if (!handled) {
-        // Normal reply — split if over Discord's 2000-char limit
-        await this.sendChunked(message, visibleReply || rawReply);
-      } else if (visibleReply) {
-        // Send the clean explanation text (without the JSON block)
-        await this.sendChunked(message, visibleReply);
+      if (cmd) {
+        await this.dispatch(message, channelId, cmd, visibleReply);
+      } else {
+        await this.sendChunked(message, rawReply);
       }
       // ------------------------------------------
 
@@ -79,120 +89,133 @@ export class DiscordBot {
     }
   }
 
-  /**
-   * Parses and executes a system_command block embedded in the LLM reply.
-   * Returns whether a command was handled and the clean visible reply text.
-   */
-  private async executeCommand(
-    message: Message,
-    rawReply: string
-  ): Promise<{ handled: boolean; visibleReply: string }> {
-    const BLOCK_REGEX = /```system_command\s*([\s\S]*?)```/i;
-    const match = rawReply.match(BLOCK_REGEX);
+  // ─────────────────────────────────────────────────────────────────
+  // Parse — try multiple formats the LLM might use
+  // ─────────────────────────────────────────────────────────────────
+  private parseCommand(rawReply: string): { cmd: Record<string, any> | null; visibleReply: string } {
+    // 1. ```system_command { ... } ```
+    const scMatch = rawReply.match(/```system_command\s*(\{[\s\S]*?\})\s*```/i);
+    if (scMatch) return this.tryParse(scMatch[1], rawReply, scMatch[0]);
 
-    // No command block — nothing to do
-    if (!match) return { handled: false, visibleReply: rawReply };
+    // 2. ```json { ... } ``` or ``` { ... } ``` containing "action"
+    const jbMatch = rawReply.match(/```(?:json)?\s*(\{[\s\S]*?"action"[\s\S]*?\})\s*```/i);
+    if (jbMatch) return this.tryParse(jbMatch[1], rawReply, jbMatch[0]);
 
-    // Strip the JSON block to get the clean conversational text
-    const visibleReply = rawReply.replace(BLOCK_REGEX, '').trim();
+    // 3. Raw JSON block anywhere in the reply — { ... "action" ... }
+    const rawMatch = rawReply.match(/(\{[^{}]*"action"\s*:\s*"[^"]+?"[^{}]*\})/s);
+    if (rawMatch) return this.tryParse(rawMatch[1], rawReply, rawMatch[0]);
 
-    let cmd: Record<string, any>;
+    return { cmd: null, visibleReply: rawReply };
+  }
+
+  private tryParse(
+    jsonStr: string,
+    rawReply: string,
+    toStrip: string
+  ): { cmd: Record<string, any> | null; visibleReply: string } {
     try {
-      cmd = JSON.parse(match[1].trim());
-    } catch (e) {
-      console.error('[Discord] Failed to parse system_command JSON:', e);
-      return { handled: false, visibleReply };
+      const cmd = JSON.parse(jsonStr.trim());
+      const visibleReply = rawReply.replace(toStrip, '').trim();
+      return { cmd, visibleReply };
+    } catch {
+      return { cmd: null, visibleReply: rawReply };
     }
+  }
 
-    const action: string = (cmd.action || '').toLowerCase();
+  // ─────────────────────────────────────────────────────────────────
+  // Dispatch — execute the action
+  // ─────────────────────────────────────────────────────────────────
+  private async dispatch(
+    message: Message,
+    channelId: string,
+    cmd: Record<string, any>,
+    visibleReply: string
+  ) {
+    const action = (cmd.action || '').toLowerCase();
+    console.log(`[Discord] ▶ action="${action}" path="${cmd.path || ''}"`);
 
     try {
       switch (action) {
         case 'write_file': {
-          const filePath = this.resolvePath(cmd.path);
-          fs.mkdirSync(path.dirname(filePath), { recursive: true });
-          fs.writeFileSync(filePath, cmd.content ?? '', 'utf-8');
-          console.log(`[Discord] ✅ write_file → ${filePath}`);
-          await message.reply(`✅ [Agent OS] File written: \`${cmd.path}\``);
-          return { handled: true, visibleReply };
+          const fp = this.resolvePath(cmd.path);
+          fs.mkdirSync(path.dirname(fp), { recursive: true });
+          fs.writeFileSync(fp, cmd.content ?? '', 'utf-8');
+          this.lastFile.set(channelId, fp);
+          console.log(`[Discord] ✅ write_file → ${fp}`);
+          await message.reply(`✅ File created: \`${path.basename(fp)}\`\n\nSay **"send it to me"** to receive it as an attachment.`);
+          if (visibleReply) await this.sendChunked(message, visibleReply);
+          break;
         }
 
         case 'send_file': {
-          const filePath = this.resolvePath(cmd.path);
-          // Write the file first (it may not exist yet)
-          fs.mkdirSync(path.dirname(filePath), { recursive: true });
-          fs.writeFileSync(filePath, cmd.content ?? '', 'utf-8');
-          console.log(`[Discord] 📤 send_file → ${filePath}`);
-          // Send as attachment
-          const attachment = new AttachmentBuilder(filePath, {
-            name: path.basename(filePath),
-            description: `File created by 2M Claw`
+          const fp = this.resolvePath(cmd.path);
+          fs.mkdirSync(path.dirname(fp), { recursive: true });
+          fs.writeFileSync(fp, cmd.content ?? '', 'utf-8');
+          this.lastFile.set(channelId, fp);
+          console.log(`[Discord] 📤 send_file → ${fp}`);
+          if (visibleReply) await this.sendChunked(message, visibleReply);
+          const attachment = new AttachmentBuilder(fp, {
+            name: path.basename(fp),
+            description: 'File created by 2M Claw'
           });
           await message.reply({
-            content: `📂 Here is your file: \`${path.basename(filePath)}\``,
+            content: `📂 Here is your file: \`${path.basename(fp)}\``,
             files: [attachment]
           });
-          return { handled: true, visibleReply };
+          break;
         }
 
         case 'memorize': {
           if (cmd.fact) {
             globalMemory.addFact(cmd.fact);
             console.log(`[Discord] 🧠 memorized: ${cmd.fact}`);
-            await message.reply(`🧠 [Agent OS] Fact memorized.`);
           }
-          return { handled: true, visibleReply };
+          if (visibleReply) await this.sendChunked(message, visibleReply);
+          else await message.reply(`🧠 Fact memorized.`);
+          break;
         }
 
         case 'read_file': {
-          const filePath = this.resolvePath(cmd.path);
-          if (fs.existsSync(filePath)) {
-            const fileContent = fs.readFileSync(filePath, 'utf-8');
-            const preview = fileContent.substring(0, 1900);
-            await message.reply(`📖 [Agent OS] \`${cmd.path}\`:\n\`\`\`\n${preview}\n\`\`\``);
+          const fp = this.resolvePath(cmd.path);
+          if (fs.existsSync(fp)) {
+            const fileContent = fs.readFileSync(fp, 'utf-8');
+            const preview = fileContent.substring(0, 1800);
+            await message.reply(`📖 \`${path.basename(fp)}\`:\n\`\`\`\n${preview}\n\`\`\``);
           } else {
-            await message.reply(`❌ [Agent OS] File not found: \`${cmd.path}\``);
+            await message.reply(`❌ File not found: \`${cmd.path}\``);
           }
-          return { handled: true, visibleReply };
+          break;
         }
 
         case 'delete_file': {
-          const filePath = this.resolvePath(cmd.path);
-          if (fs.existsSync(filePath)) {
-            fs.unlinkSync(filePath);
-            await message.reply(`🗑️ [Agent OS] Deleted: \`${cmd.path}\``);
+          const fp = this.resolvePath(cmd.path);
+          if (fs.existsSync(fp)) {
+            fs.unlinkSync(fp);
+            await message.reply(`🗑️ Deleted: \`${path.basename(fp)}\``);
           } else {
-            await message.reply(`❌ [Agent OS] File not found: \`${cmd.path}\``);
+            await message.reply(`❌ File not found: \`${cmd.path}\``);
           }
-          return { handled: true, visibleReply };
+          break;
         }
 
         default:
           console.warn(`[Discord] Unknown action: "${action}"`);
-          return { handled: false, visibleReply };
+          await this.sendChunked(message, visibleReply || '🤔 Unknown action.');
       }
     } catch (err: any) {
       console.error(`[Discord] Error during "${action}":`, err.message);
-      await message.reply(`❌ [Agent OS] Execution Error (${action}): ${err.message}`);
-      return { handled: true, visibleReply };
+      await message.reply(`❌ Agent Error (${action}): ${err.message}`);
     }
   }
 
-  /** Splits a long reply into 2000-char chunks for Discord's limit */
   private async sendChunked(message: Message, text: string) {
     if (!text) return;
-    if (text.length <= 2000) {
-      await message.reply(text);
-    } else {
-      const chunks = text.match(/[\s\S]{1,1999}/g) || [];
-      for (const chunk of chunks) {
-        await message.reply(chunk);
-      }
-    }
+    const chunks = text.match(/[\s\S]{1,1999}/g) || [];
+    for (const chunk of chunks) await message.reply(chunk);
   }
 
   private resolvePath(filePath: string): string {
-    if (!filePath) throw new Error('No file path specified in system_command.');
+    if (!filePath) throw new Error('No file path in command.');
     return path.isAbsolute(filePath) ? filePath : path.resolve(process.cwd(), filePath);
   }
 }
