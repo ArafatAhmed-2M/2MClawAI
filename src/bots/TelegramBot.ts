@@ -11,8 +11,9 @@ export class TelegramBot {
     try {
       this.bot = new TelegramBotAPI(token, { polling: true });
       console.log('\n✈️ [Telegram] Bot connected!');
+      // We need a way to notify the dashboard. Let's use a global event or just console log for now.
+      // In a real app, we'd emit a socket event.
 
-      this.bot.on('message', async (msg) => {
         if (!msg.text || msg.from?.is_bot) return;
         const chatId = msg.chat.id;
 

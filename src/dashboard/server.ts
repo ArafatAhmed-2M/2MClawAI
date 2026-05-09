@@ -173,6 +173,28 @@ export class DashboardServer {
 
       socket.on('chat_message', async (data) => {
         const { provider, model, message } = data;
+
+        // --- Telegram Token Quick-Connect Interceptor ---
+        if (message.includes(':') && (message.toLowerCase().includes('telegram') || message.toLowerCase().includes('token'))) {
+            const tokenMatch = message.match(/(\d{8,10}:[A-Za-z0-9_-]{35})/);
+            if (tokenMatch) {
+                const token = tokenMatch[1];
+                process.env.TELEGRAM_BOT_TOKEN = token;
+                
+                const envPath = path.join(__dirname, '../../../.env');
+                let envContent = fs.existsSync(envPath) ? fs.readFileSync(envPath, 'utf-8') : '';
+                const regex = /^TELEGRAM_BOT_TOKEN=.*$/m;
+                if (regex.test(envContent)) {
+                    envContent = envContent.replace(regex, `TELEGRAM_BOT_TOKEN=${token}`);
+                } else {
+                    envContent += `\nTELEGRAM_BOT_TOKEN=${token}`;
+                }
+                fs.writeFileSync(envPath, envContent.trim() + '\n', 'utf-8');
+                socket.emit('log', { message: `✈️ [Agent OS] Telegram Token saved to .env! Please restart the server to activate the bot.` });
+            }
+        }
+        // ------------------------------------------------
+
         try {
           socket.emit('chat_status', { status: 'thinking' });
           const reply = await LLMService.generateResponse(provider, model, message);

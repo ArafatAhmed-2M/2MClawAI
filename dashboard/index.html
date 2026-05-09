@@ -41,7 +41,25 @@
         <section id="view-chat" class="view active-view">
             <header class="view-header">
                 <h2><i class='bx bx-message-square-dots'></i> Assistant Chat</h2>
-                <span class="status online"><div class="status-dot"></div> Gateway Online</span>
+                <div style="display:flex; align-items:center; gap: 1rem;">
+                    <div style="display:flex; align-items:center; gap:0.5rem; font-size:0.85rem; color:var(--text-muted);">
+                        <i class='bx bx-volume-full'></i> Voice Output
+                        <label class="switch" style="transform: scale(0.65); margin-left: 0.5rem;">
+                            <input type="checkbox" id="tts-toggle" checked>
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                    <div style="display:flex; align-items:center; gap: 1rem;">
+                    <div style="display:flex; align-items:center; gap:0.5rem; font-size:0.85rem; color:var(--text-muted);">
+                        <i class='bx bx-volume-full'></i> Voice Output
+                        <label class="switch" style="transform: scale(0.65); margin-left: 0.5rem;">
+                            <input type="checkbox" id="tts-toggle" checked>
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                    <span class="status online"><div class="status-dot"></div> Gateway Online</span>
+                </div>
+                </div>
             </header>
             
             <div class="chat-container" id="chat-box">
