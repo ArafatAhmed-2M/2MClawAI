@@ -1,5 +1,19 @@
 import axios from 'axios';
 
+const AGENT_SYSTEM_PROMPT = `You are 2M Claw, an autonomous AI operating system. 
+You can write code, edit files, and execute system commands.
+If the user asks you to read, edit, or delete a file, you MUST output a JSON block wrapped in EXACTLY this format to trigger the agentic execution engine:
+
+\`\`\`system_command
+{
+  "action": "write_file",
+  "path": "relative/path/to/file.ext",
+  "content": "file content here if writing"
+}
+\`\`\`
+
+When you output this block, the backend will automatically intercept it, run the command, and feed the result back to the user. Do not use this block for normal conversational replies, ONLY when modifying or interacting with the file system.`;
+
 export class LLMService {
   public static async generateResponse(provider: string, model: string, prompt: string): Promise<string> {
     try {
@@ -40,7 +54,10 @@ export class LLMService {
     if (!apiKey && endpoint.indexOf('localhost') === -1) throw new Error('API Key missing. Please set it in Settings.');
     const res = await axios.post(endpoint, {
       model,
-      messages: [{ role: 'user', content: prompt }]
+      messages: [
+        { role: 'system', content: AGENT_SYSTEM_PROMPT },
+        { role: 'user', content: prompt }
+      ]
     }, {
       headers: {
         'Authorization': `Bearer ${apiKey}`,
@@ -57,6 +74,7 @@ export class LLMService {
     if (!apiKey) throw new Error('Claude API Key missing. Please set it in Settings.');
     const res = await axios.post('https://api.anthropic.com/v1/messages', {
       model,
+      system: AGENT_SYSTEM_PROMPT,
       max_tokens: 1024,
       messages: [{ role: 'user', content: prompt }]
     }, {
@@ -74,6 +92,7 @@ export class LLMService {
     if (!apiKey) throw new Error('Gemini API Key missing. Please set it in Settings.');
     const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
     const res = await axios.post(endpoint, {
+      system_instruction: { parts: [{ text: AGENT_SYSTEM_PROMPT }] },
       contents: [{ parts: [{ text: prompt }] }]
     }, {
       headers: { 'Content-Type': 'application/json' }
@@ -85,7 +104,10 @@ export class LLMService {
     const endpoint = process.env.OLLAMA_ENDPOINT || 'http://localhost:11434';
     const res = await axios.post(`${endpoint}/api/chat`, {
       model,
-      messages: [{ role: 'user', content: prompt }],
+      messages: [
+        { role: 'system', content: AGENT_SYSTEM_PROMPT },
+        { role: 'user', content: prompt }
+      ],
       stream: false
     });
     return res.data.message.content;
@@ -96,6 +118,7 @@ export class LLMService {
     if (!apiKey) throw new Error('Cohere API Key missing. Please set it in Settings.');
     const res = await axios.post('https://api.cohere.ai/v1/chat', {
       model,
+      preamble: AGENT_SYSTEM_PROMPT,
       message: prompt
     }, {
       headers: {
@@ -110,7 +133,7 @@ export class LLMService {
     const apiKey = process.env.HF_API_KEY;
     if (!apiKey) throw new Error('Hugging Face Token missing. Please set it in Settings.');
     const res = await axios.post(`https://api-inference.huggingface.co/models/${model}`, {
-      inputs: prompt,
+      inputs: `System: ${AGENT_SYSTEM_PROMPT}\nUser: ${prompt}`,
       parameters: { max_new_tokens: 250 }
     }, {
       headers: {

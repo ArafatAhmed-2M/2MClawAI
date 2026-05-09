@@ -169,6 +169,36 @@ export class DashboardServer {
         try {
           socket.emit('chat_status', { status: 'thinking' });
           const reply = await LLMService.generateResponse(provider, model, message);
+          
+          // Agentic System Command Interceptor
+          const commandMatch = reply.match(/```system_command\n([\s\S]*?)\n```/);
+          if (commandMatch) {
+            try {
+              const cmd = JSON.parse(commandMatch[1]);
+              // Prevent escaping workspace by resolving path safely
+              const targetPath = path.resolve(process.cwd(), cmd.path);
+              if (!targetPath.startsWith(process.cwd())) {
+                 throw new Error("Security Violation: Cannot access outside workspace");
+              }
+              
+              if (cmd.action === 'write_file') {
+                fs.mkdirSync(path.dirname(targetPath), { recursive: true });
+                fs.writeFileSync(targetPath, cmd.content || '', 'utf-8');
+                socket.emit('log', { message: `✅ [Agent OS] Executed write_file: ${cmd.path}` });
+              } else if (cmd.action === 'read_file') {
+                const content = fs.readFileSync(targetPath, 'utf-8');
+                socket.emit('log', { message: `✅ [Agent OS] Read file: ${cmd.path}\n\n${content.substring(0, 500)}${content.length > 500 ? '...' : ''}` });
+              } else if (cmd.action === 'delete_file') {
+                fs.unlinkSync(targetPath);
+                socket.emit('log', { message: `✅ [Agent OS] Deleted file: ${cmd.path}` });
+              } else {
+                socket.emit('log', { message: `⚠️ [Agent OS] Unknown action: ${cmd.action}` });
+              }
+            } catch (e: any) {
+              socket.emit('log', { message: `❌ [Agent OS] Execution Failed: ${e.message}` });
+            }
+          }
+
           socket.emit('chat_response', { message: reply, provider, model });
         } catch (err: any) {
           socket.emit('chat_error', { message: err.message || 'Unknown error occurred.' });
