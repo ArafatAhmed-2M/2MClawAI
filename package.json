@@ -29,11 +29,14 @@
     "url": "https://github.com/ArafatAhmed-2M/2MClawAI.git"
   },
   "dependencies": {
+    "@types/node-telegram-bot-api": "^0.64.14",
     "axios": "^1.6.2",
     "cors": "^2.8.5",
+    "discord.js": "^14.26.4",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "node-cron": "^3.0.3",
+    "node-telegram-bot-api": "^0.67.0",
     "socket.io": "^4.7.2",
     "winston": "^3.11.0",
     "yaml": "^2.3.4"

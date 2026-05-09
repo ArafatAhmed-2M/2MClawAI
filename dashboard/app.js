@@ -66,6 +66,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if(keys.TOGETHER_API_KEY) document.getElementById('key-together').value = keys.TOGETHER_API_KEY;
             if(keys.CUSTOM_BASE_URL) document.getElementById('key-custom-url').value = keys.CUSTOM_BASE_URL;
             if(keys.CUSTOM_API_KEY) document.getElementById('key-custom-key').value = keys.CUSTOM_API_KEY;
+            if(keys.DISCORD_BOT_TOKEN) document.getElementById('key-discord').value = keys.DISCORD_BOT_TOKEN;
+            if(keys.TELEGRAM_BOT_TOKEN) document.getElementById('key-telegram').value = keys.TELEGRAM_BOT_TOKEN;
 
             if(keys.OPENAI_MODELS) document.getElementById('models-openai').value = keys.OPENAI_MODELS;
             if(keys.CLAUDE_MODELS) document.getElementById('models-claude').value = keys.CLAUDE_MODELS;
@@ -98,6 +100,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 TOGETHER_API_KEY: document.getElementById('key-together').value,
                 CUSTOM_BASE_URL: document.getElementById('key-custom-url').value,
                 CUSTOM_API_KEY: document.getElementById('key-custom-key').value,
+                DISCORD_BOT_TOKEN: document.getElementById('key-discord').value,
+                TELEGRAM_BOT_TOKEN: document.getElementById('key-telegram').value,
                 OPENAI_MODELS: document.getElementById('models-openai').value,
                 CLAUDE_MODELS: document.getElementById('models-claude').value,
                 GEMINI_MODELS: document.getElementById('models-gemini').value,

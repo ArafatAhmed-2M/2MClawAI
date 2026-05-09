@@ -5,6 +5,7 @@ import fs from 'fs';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { LLMService } from '../llm/LLMService';
+import { globalMemory } from '../memory/LongTermMemory';
 
 export class DashboardServer {
   public static start(port: number) {
@@ -66,6 +67,8 @@ export class DashboardServer {
             TOGETHER_API_KEY: process.env.TOGETHER_API_KEY || '',
             CUSTOM_BASE_URL: process.env.CUSTOM_BASE_URL || '',
             CUSTOM_API_KEY: process.env.CUSTOM_API_KEY || '',
+            DISCORD_BOT_TOKEN: process.env.DISCORD_BOT_TOKEN || '',
+            TELEGRAM_BOT_TOKEN: process.env.TELEGRAM_BOT_TOKEN || '',
             OPENAI_MODELS: process.env.OPENAI_MODELS || 'gpt-4o,gpt-5-turbo',
             CLAUDE_MODELS: process.env.CLAUDE_MODELS || 'claude-3-opus,claude-3-sonnet',
             GEMINI_MODELS: process.env.GEMINI_MODELS || 'gemini-3.1-pro-preview,gemini-3-flash-preview,gemini-3.1-flash-lite,gemini-3.1-flash-image-preview',
@@ -97,6 +100,8 @@ export class DashboardServer {
         if(keys.TOGETHER_API_KEY !== undefined) process.env.TOGETHER_API_KEY = keys.TOGETHER_API_KEY;
         if(keys.CUSTOM_BASE_URL !== undefined) process.env.CUSTOM_BASE_URL = keys.CUSTOM_BASE_URL;
         if(keys.CUSTOM_API_KEY !== undefined) process.env.CUSTOM_API_KEY = keys.CUSTOM_API_KEY;
+        if(keys.DISCORD_BOT_TOKEN !== undefined) process.env.DISCORD_BOT_TOKEN = keys.DISCORD_BOT_TOKEN;
+        if(keys.TELEGRAM_BOT_TOKEN !== undefined) process.env.TELEGRAM_BOT_TOKEN = keys.TELEGRAM_BOT_TOKEN;
 
         if(keys.OPENAI_MODELS !== undefined) process.env.OPENAI_MODELS = keys.OPENAI_MODELS;
         if(keys.CLAUDE_MODELS !== undefined) process.env.CLAUDE_MODELS = keys.CLAUDE_MODELS;
@@ -138,6 +143,8 @@ export class DashboardServer {
             updateOrAdd('TOGETHER_API_KEY', keys.TOGETHER_API_KEY || '');
             updateOrAdd('CUSTOM_BASE_URL', keys.CUSTOM_BASE_URL || '');
             updateOrAdd('CUSTOM_API_KEY', keys.CUSTOM_API_KEY || '');
+            updateOrAdd('DISCORD_BOT_TOKEN', keys.DISCORD_BOT_TOKEN || '');
+            updateOrAdd('TELEGRAM_BOT_TOKEN', keys.TELEGRAM_BOT_TOKEN || '');
 
             updateOrAdd('OPENAI_MODELS', keys.OPENAI_MODELS || '');
             updateOrAdd('CLAUDE_MODELS', keys.CLAUDE_MODELS || '');
@@ -197,6 +204,9 @@ export class DashboardServer {
               } else if (cmd.action === 'delete_file') {
                 fs.unlinkSync(targetPath);
                 socket.emit('log', { message: `✅ [Agent OS] Deleted file: ${cmd.path}` });
+              } else if (cmd.action === 'memorize') {
+                globalMemory.addFact(cmd.fact);
+                socket.emit('log', { message: `🧠 [Agent OS] Memorized new fact: ${cmd.fact}` });
               } else {
                 socket.emit('log', { message: `⚠️ [Agent OS] Unknown action: ${cmd.action}` });
               }

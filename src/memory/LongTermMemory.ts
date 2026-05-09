@@ -19,11 +19,13 @@ export class LongTermMemory {
       const content = fs.readFileSync(this.dataPath, 'utf-8');
       try {
         this.memoryData = JSON.parse(content);
+        if (!this.memoryData.facts) this.memoryData.facts = [];
       } catch (e) {
         console.warn('⚠️ Memory file corrupted, creating fresh memory.');
-        this.memoryData = {};
+        this.memoryData = { facts: [] };
       }
     } else {
+      this.memoryData = { facts: [] };
       this.save();
     }
   }
@@ -37,7 +39,19 @@ export class LongTermMemory {
     this.save();
   }
 
+  public addFact(fact: string): void {
+    if (!this.memoryData.facts) this.memoryData.facts = [];
+    this.memoryData.facts.push(fact);
+    this.save();
+  }
+
+  public getFacts(): string[] {
+    return this.memoryData.facts || [];
+  }
+
   private save() {
     fs.writeFileSync(this.dataPath, JSON.stringify(this.memoryData, null, 2), 'utf-8');
   }
 }
+
+export const globalMemory = new LongTermMemory();

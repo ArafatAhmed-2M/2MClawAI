@@ -1,17 +1,20 @@
 import axios from 'axios';
 import os from 'os';
+import { globalMemory } from '../memory/LongTermMemory';
 
 export class LLMService {
   private static getAgentSystemPrompt(): string {
+    const facts = globalMemory.getFacts().map(f => `- ${f}`).join('\n');
     return `You are 2M Claw, an autonomous AI operating system. 
-You can write code, edit files, and execute system commands.
-If the user asks you to read, edit, or delete a file, you MUST output a JSON block wrapped in EXACTLY this format to trigger the agentic execution engine:
+You can write code, edit files, execute system commands, and memorize facts about the user.
+If the user asks you to read, edit, or delete a file, OR if you learn a new important fact about the user that you should remember for the future, you MUST output a JSON block wrapped in EXACTLY this format to trigger the agentic execution engine:
 
 \`\`\`system_command
 {
-  "action": "write_file",
+  "action": "write_file" | "memorize",
   "path": "absolute/or/relative/path/to/file.ext",
-  "content": "file content here if writing"
+  "content": "file content here if writing",
+  "fact": "fact to remember if memorizing"
 }
 \`\`\`
 
@@ -19,7 +22,10 @@ ENVIRONMENT CONTEXT:
 - Current Working Directory: ${process.cwd()}
 - User Home Directory: ${os.homedir()}
 
-When you output this block, the backend will automatically intercept it, run the command, and feed the result back to the user. Do not use this block for normal conversational replies, ONLY when modifying or interacting with the file system.`;
+USER MEMORY (FACTS TO REMEMBER):
+${facts || 'No facts memorized yet.'}
+
+When you output this block, the backend will automatically intercept it. Do not use this block for normal conversational replies, ONLY when modifying the file system or memorizing a new fact.`;
   }
 
   public static async generateResponse(provider: string, model: string, prompt: string): Promise<string> {
