@@ -170,11 +170,20 @@ export class DashboardServer {
           socket.emit('chat_status', { status: 'thinking' });
           const reply = await LLMService.generateResponse(provider, model, message);
           
-          // Agentic System Command Interceptor
-          const commandMatch = reply.match(/```system_command\n([\s\S]*?)\n```/);
-          if (commandMatch) {
+          // Agentic System Command Interceptor (Robust Parsing)
+          let commandStr: string | null = null;
+          const commandMatch = reply.match(/```(?:system_command|json)?\n?([\s\S]*?)\n?```/);
+          
+          if (commandMatch && commandMatch[1].includes('"action"')) {
+              commandStr = commandMatch[1];
+          } else {
+              const fallbackMatch = reply.match(/({[\s\S]*?"action"[\s\S]*})/);
+              if (fallbackMatch) commandStr = fallbackMatch[1];
+          }
+
+          if (commandStr) {
             try {
-              const cmd = JSON.parse(commandMatch[1]);
+              const cmd = JSON.parse(commandStr);
               // Allow absolute paths and workspace paths
               const targetPath = path.resolve(process.cwd(), cmd.path);
               
