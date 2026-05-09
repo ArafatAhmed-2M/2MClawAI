@@ -191,12 +191,25 @@ export class DashboardServer {
                 }
                 fs.writeFileSync(envPath, envContent.trim() + '\n', 'utf-8');
                 
-                socket.emit('log', { message: `✈️ [Agent OS] Telegram Token saved to .env!` });
-                socket.emit('chat_response', { 
-                    message: "✅ **Telegram Token Detected!** I have securely saved this to your configuration.\n\n**To activate the bot:**\n1. Stop your server (Ctrl+C).\n2. Run `npm start` again.\n\n2M Claw will then connect to your Telegram bot automatically!",
-                    provider: "Agent OS",
-                    model: "Core Interceptor"
-                });
+                socket.emit('log', { message: `✈️ [Agent OS] Telegram Token saved! Connecting instantly...` });
+                
+                // --- Hot-Connect Logic (No Restart Required) ---
+                try {
+                    const { GatewayManager } = require('../gateway/index');
+                    if (GatewayManager && GatewayManager.instance) {
+                        GatewayManager.instance.telegramBot.start(token);
+                        socket.emit('chat_response', { 
+                            message: "✅ **Telegram Token Detected!** I have securely saved it and **connected your bot instantly**.\n\nYou can now go to Telegram and start chatting with 2M Claw!",
+                            provider: "Agent OS",
+                            model: "Core Interceptor"
+                        });
+                    } else {
+                        socket.emit('log', { message: `⚠️ [Agent OS] Token saved, but Gateway instance not found for hot-connect.` });
+                    }
+                } catch(e: any) {
+                    socket.emit('log', { message: `⚠️ [Agent OS] Token saved, but hot-connect failed: ${e.message}` });
+                }
+                // -----------------------------------------------
                 return; // Skip LLM generation
             }
         }

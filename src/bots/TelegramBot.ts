@@ -4,9 +4,19 @@ import { LLMService } from '../llm/LLMService';
 export class TelegramBot {
   private bot: TelegramBotAPI | null = null;
 
-  public start() {
-    const token = process.env.TELEGRAM_BOT_TOKEN;
+  public stop() {
+    if (this.bot) {
+      this.bot.stopPolling();
+      this.bot = null;
+      console.log('🛑 [Telegram] Bot stopped.');
+    }
+  }
+
+  public start(tokenOverride?: string) {
+    const token = tokenOverride || process.env.TELEGRAM_BOT_TOKEN;
     if (!token) return;
+
+    this.stop(); // Ensure old bot is killed
 
     try {
       this.bot = new TelegramBotAPI(token, { polling: true });

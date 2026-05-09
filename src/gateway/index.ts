@@ -8,15 +8,17 @@ import { TelegramBot } from '../bots/TelegramBot';
 
 dotenv.config();
 
-class GatewayManager {
+export class GatewayManager {
+  public static instance: GatewayManager;
   private memory: LongTermMemory;
   private proactiveAgent: ProactiveAgent;
   private autoUpdater: AutoUpdater;
-  private discordBot: DiscordBot;
-  private telegramBot: TelegramBot;
+  public discordBot: DiscordBot;
+  public telegramBot: TelegramBot;
 
   constructor() {
     console.log('🐾 Initializing 2M Claw Gateway...');
+    GatewayManager.instance = this;
     
     // Initialize Core Components
     this.memory = globalMemory;
