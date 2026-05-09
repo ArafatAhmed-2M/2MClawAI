@@ -308,14 +308,32 @@
                         
                         <div style="width: 100%; display: flex; flex-direction: column; gap: 1.5rem; margin-top: 1rem;">
                             <!-- Discord -->
-                            <div>
-                                <label style="display:block; margin-bottom: 0.5rem; font-size:0.85rem; color:var(--text-muted);">Discord Bot Token</label>
-                                <input type="password" id="key-discord" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-void); color: white; outline:none;" placeholder="MTA...">
+                            <div style="background: var(--bg-void); border: 1px solid var(--border); border-radius: 12px; padding: 1.2rem;">
+                                <div style="display:flex; align-items:center; gap:0.6rem; margin-bottom: 1rem;">
+                                    <i class='bx bxl-discord-alt' style="font-size:1.3rem; color: #7289da;"></i>
+                                    <strong style="font-size:0.95rem;">Discord Bot</strong>
+                                    <span id="discord-status-badge" style="margin-left:auto; font-size:0.75rem; padding:0.2rem 0.7rem; border-radius:99px; background:var(--bg-card); color:var(--text-muted);">Not Connected</span>
+                                </div>
+                                <label style="display:block; margin-bottom: 0.5rem; font-size:0.85rem; color:var(--text-muted);">Bot Token</label>
+                                <div style="display:flex; gap: 0.7rem;">
+                                    <input type="password" id="key-discord" style="flex:1; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-surface); color: white; outline:none;" placeholder="MTA...">
+                                    <button id="btn-discord-connect" class="btn-primary" style="white-space:nowrap; padding: 0 1.2rem;"><i class='bx bx-plug'></i> Connect</button>
+                                </div>
+                                <p id="discord-connect-msg" style="margin-top:0.5rem; font-size:0.8rem; color:var(--text-muted); min-height:1em;"></p>
                             </div>
                             <!-- Telegram -->
-                            <div>
-                                <label style="display:block; margin-bottom: 0.5rem; font-size:0.85rem; color:var(--text-muted);">Telegram Bot Token</label>
-                                <input type="password" id="key-telegram" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-void); color: white; outline:none;" placeholder="123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11">
+                            <div style="background: var(--bg-void); border: 1px solid var(--border); border-radius: 12px; padding: 1.2rem;">
+                                <div style="display:flex; align-items:center; gap:0.6rem; margin-bottom: 1rem;">
+                                    <i class='bx bxl-telegram' style="font-size:1.3rem; color: #26a5e4;"></i>
+                                    <strong style="font-size:0.95rem;">Telegram Bot</strong>
+                                    <span id="telegram-status-badge" style="margin-left:auto; font-size:0.75rem; padding:0.2rem 0.7rem; border-radius:99px; background:var(--bg-card); color:var(--text-muted);">Not Connected</span>
+                                </div>
+                                <label style="display:block; margin-bottom: 0.5rem; font-size:0.85rem; color:var(--text-muted);">Bot Token (from @BotFather)</label>
+                                <div style="display:flex; gap: 0.7rem;">
+                                    <input type="password" id="key-telegram" style="flex:1; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-surface); color: white; outline:none;" placeholder="123456789:ABCDefGhi...">
+                                    <button id="btn-telegram-connect" class="btn-primary" style="white-space:nowrap; padding: 0 1.2rem;"><i class='bx bxl-telegram'></i> Connect</button>
+                                </div>
+                                <p id="telegram-connect-msg" style="margin-top:0.5rem; font-size:0.8rem; color:var(--text-muted); min-height:1em;"></p>
                             </div>
                         </div>
                     </div>

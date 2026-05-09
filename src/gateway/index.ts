@@ -5,6 +5,7 @@ import { ProactiveAgent } from '../proactive/ProactiveAgent';
 import { AutoUpdater } from '../updater/AutoUpdater';
 import { DiscordBot } from '../bots/DiscordBot';
 import { TelegramBot } from '../bots/TelegramBot';
+import { BotRegistry } from '../bots/BotRegistry';
 
 dotenv.config();
 
@@ -26,6 +27,10 @@ export class GatewayManager {
     this.autoUpdater = new AutoUpdater();
     this.discordBot = new DiscordBot();
     this.telegramBot = new TelegramBot();
+
+    // Register bots so DashboardServer can hot-connect without circular imports
+    BotRegistry.setTelegram(this.telegramBot);
+    BotRegistry.setDiscord(this.discordBot);
   }
 
   public async start() {

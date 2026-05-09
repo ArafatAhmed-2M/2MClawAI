@@ -124,14 +124,63 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(res => res.json())
             .then(data => {
                 saveBtn.textContent = 'Saved!';
-                setTimeout(() => saveBtn.textContent = 'Save Changes', 2000);
+                setTimeout(() => saveBtn.textContent = 'Save Configuration', 2000);
             })
             .catch(err => {
                 saveBtn.textContent = 'Error!';
-                setTimeout(() => saveBtn.textContent = 'Save Changes', 2000);
+                setTimeout(() => saveBtn.textContent = 'Save Configuration', 2000);
             });
         });
     }
+
+    // --- Bot Connect Buttons ---
+    const connectBot = (platform, inputId, btnId, badgeId, msgId) => {
+        const btn = document.getElementById(btnId);
+        const badge = document.getElementById(badgeId);
+        const msg = document.getElementById(msgId);
+        if (!btn) return;
+
+        btn.addEventListener('click', () => {
+            const token = document.getElementById(inputId)?.value?.trim();
+            if (!token) {
+                if (msg) { msg.textContent = '⚠️ Please enter a token first.'; msg.style.color = '#f59e0b'; }
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = `<i class='bx bx-loader-alt bx-spin'></i> Connecting...`;
+            if (msg) { msg.textContent = 'Connecting...'; msg.style.color = 'var(--text-muted)'; }
+
+            fetch(`http://localhost:3000/api/${platform}/connect`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    if (badge) { badge.textContent = '🟢 Connected'; badge.style.color = '#22c55e'; badge.style.background = 'rgba(34,197,94,0.15)'; }
+                    if (msg) { msg.textContent = data.message || '✅ Connected successfully!'; msg.style.color = '#22c55e'; }
+                    btn.innerHTML = `<i class='bx bx-check'></i> Connected`;
+                    btn.style.background = 'rgba(34,197,94,0.2)';
+                } else {
+                    if (badge) { badge.textContent = '🔴 Failed'; badge.style.color = '#ef4444'; }
+                    if (msg) { msg.textContent = `❌ ${data.error || 'Connection failed.'}`; msg.style.color = '#ef4444'; }
+                    btn.disabled = false;
+                    btn.innerHTML = `<i class='bx bx-plug'></i> Retry`;
+                }
+            })
+            .catch(err => {
+                if (msg) { msg.textContent = '❌ Server unreachable. Is 2M Claw running?'; msg.style.color = '#ef4444'; }
+                btn.disabled = false;
+                btn.innerHTML = `<i class='bx bx-plug'></i> Retry`;
+            });
+        });
+    };
+
+    connectBot('telegram', 'key-telegram', 'btn-telegram-connect', 'telegram-status-badge', 'telegram-connect-msg');
+    connectBot('discord', 'key-discord', 'btn-discord-connect', 'discord-status-badge', 'discord-connect-msg');
+    // ---------------------------
 
     // --- CHAT LOGIC ---
     if (typeof io !== 'undefined') {

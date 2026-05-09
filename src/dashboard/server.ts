@@ -6,6 +6,7 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { LLMService } from '../llm/LLMService';
 import { globalMemory } from '../memory/LongTermMemory';
+import { BotRegistry } from '../bots/BotRegistry';
 
 export class DashboardServer {
   public static start(port: number) {
@@ -51,6 +52,56 @@ export class DashboardServer {
             { id: 'custom', name: 'Custom Endpoint', models: getModels('CUSTOM_MODELS', '') }
         ]);
     });
+
+    // --- Bot Connect Endpoints (no restart needed) ---
+    app.post('/api/telegram/connect', (req, res) => {
+        const { token } = req.body;
+        if (!token) return res.status(400).json({ success: false, error: 'No token provided.' });
+
+        process.env.TELEGRAM_BOT_TOKEN = token;
+        const envPath = path.join(__dirname, '../../../.env');
+        let envContent = fs.existsSync(envPath) ? fs.readFileSync(envPath, 'utf-8') : '';
+        const regex = /^TELEGRAM_BOT_TOKEN=.*$/m;
+        envContent = regex.test(envContent)
+            ? envContent.replace(regex, `TELEGRAM_BOT_TOKEN=${token}`)
+            : envContent + `\nTELEGRAM_BOT_TOKEN=${token}`;
+        fs.writeFileSync(envPath, envContent.trim() + '\n', 'utf-8');
+
+        const bot = BotRegistry.getTelegram();
+        if (!bot) return res.status(503).json({ success: false, error: 'Bot registry not ready yet. Is the server starting?' });
+
+        try {
+            bot.start(token);
+            res.json({ success: true, message: '✈️ Telegram bot connected!' });
+        } catch (e: any) {
+            res.status(500).json({ success: false, error: e.message });
+        }
+    });
+
+    app.post('/api/discord/connect', (req, res) => {
+        const { token } = req.body;
+        if (!token) return res.status(400).json({ success: false, error: 'No token provided.' });
+
+        process.env.DISCORD_BOT_TOKEN = token;
+        const envPath = path.join(__dirname, '../../../.env');
+        let envContent = fs.existsSync(envPath) ? fs.readFileSync(envPath, 'utf-8') : '';
+        const regex = /^DISCORD_BOT_TOKEN=.*$/m;
+        envContent = regex.test(envContent)
+            ? envContent.replace(regex, `DISCORD_BOT_TOKEN=${token}`)
+            : envContent + `\nDISCORD_BOT_TOKEN=${token}`;
+        fs.writeFileSync(envPath, envContent.trim() + '\n', 'utf-8');
+
+        const bot = BotRegistry.getDiscord();
+        if (!bot) return res.status(503).json({ success: false, error: 'Bot registry not ready yet.' });
+
+        try {
+            bot.start();
+            res.json({ success: true, message: '🤖 Discord bot connected!' });
+        } catch (e: any) {
+            res.status(500).json({ success: false, error: e.message });
+        }
+    });
+    // ----------------------------------------------------
 
     // Settings API
     app.get('/api/settings/keys', (req, res) => {
@@ -175,43 +226,39 @@ export class DashboardServer {
         const { provider, model, message } = data;
 
         // --- Telegram Token Quick-Connect Interceptor ---
-        if (message.includes(':') && (message.toLowerCase().includes('telegram') || message.toLowerCase().includes('token') || message.toLowerCase().includes('connect'))) {
-            const tokenMatch = message.match(/(\d{8,10}:[A-Za-z0-9_-]{35})/);
-            if (tokenMatch) {
-                const token = tokenMatch[1];
-                process.env.TELEGRAM_BOT_TOKEN = token;
-                
-                const envPath = path.join(__dirname, '../../../.env');
-                let envContent = fs.existsSync(envPath) ? fs.readFileSync(envPath, 'utf-8') : '';
-                const regex = /^TELEGRAM_BOT_TOKEN=.*$/m;
-                if (regex.test(envContent)) {
-                    envContent = envContent.replace(regex, `TELEGRAM_BOT_TOKEN=${token}`);
-                } else {
-                    envContent += `\nTELEGRAM_BOT_TOKEN=${token}`;
-                }
-                fs.writeFileSync(envPath, envContent.trim() + '\n', 'utf-8');
-                
-                socket.emit('log', { message: `✈️ [Agent OS] Telegram Token saved! Connecting instantly...` });
-                
-                // --- Hot-Connect Logic (No Restart Required) ---
+        // Detects a Telegram bot token anywhere in the message (no keywords required)
+        const telegramTokenMatch = message.match(/(\d{8,10}:[A-Za-z0-9_-]{35})/);
+        if (telegramTokenMatch) {
+            const token = telegramTokenMatch[1];
+            process.env.TELEGRAM_BOT_TOKEN = token;
+
+            const envPath = path.join(__dirname, '../../../.env');
+            let envContent = fs.existsSync(envPath) ? fs.readFileSync(envPath, 'utf-8') : '';
+            const regex = /^TELEGRAM_BOT_TOKEN=.*$/m;
+            envContent = regex.test(envContent)
+                ? envContent.replace(regex, `TELEGRAM_BOT_TOKEN=${token}`)
+                : envContent + `\nTELEGRAM_BOT_TOKEN=${token}`;
+            fs.writeFileSync(envPath, envContent.trim() + '\n', 'utf-8');
+
+            socket.emit('log', { message: `✈️ [Agent OS] Telegram token detected! Connecting your bot now...` });
+
+            // Hot-connect via BotRegistry (no circular import, no restart needed)
+            const telegramBot = BotRegistry.getTelegram();
+            if (telegramBot) {
                 try {
-                    const { GatewayManager } = require('../gateway/index');
-                    if (GatewayManager && GatewayManager.instance) {
-                        GatewayManager.instance.telegramBot.start(token);
-                        socket.emit('chat_response', { 
-                            message: "✅ **Telegram Token Detected!** I have securely saved it and **connected your bot instantly**.\n\nYou can now go to Telegram and start chatting with 2M Claw!",
-                            provider: "Agent OS",
-                            model: "Core Interceptor"
-                        });
-                    } else {
-                        socket.emit('log', { message: `⚠️ [Agent OS] Token saved, but Gateway instance not found for hot-connect.` });
-                    }
-                } catch(e: any) {
-                    socket.emit('log', { message: `⚠️ [Agent OS] Token saved, but hot-connect failed: ${e.message}` });
+                    telegramBot.start(token);
+                    socket.emit('chat_response', {
+                        message: "✅ **Telegram Bot Connected!** Your token has been saved and the bot is live.\n\nHead to Telegram and send a message — 2M Claw will reply instantly! 🚀",
+                        provider: "Agent OS",
+                        model: "Core Interceptor"
+                    });
+                } catch (e: any) {
+                    socket.emit('log', { message: `❌ [Agent OS] Token saved but bot failed to start: ${e.message}` });
                 }
-                // -----------------------------------------------
-                return; // Skip LLM generation
+            } else {
+                socket.emit('log', { message: `⚠️ [Agent OS] Token saved to .env but bot registry is not ready yet. The bot will connect on next startup.` });
             }
+            return; // Skip LLM generation
         }
         // ------------------------------------------------
 
