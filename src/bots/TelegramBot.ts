@@ -71,6 +71,20 @@ export class TelegramBot {
                 } else {
                   await this.bot?.sendMessage(chatId, `❌ [Agent OS] Error: File not found at ${cmd.path}`);
                 }
+              } else if (cmd.action === 'read_file' && targetPath) {
+                if (fs.existsSync(targetPath)) {
+                  const content = fs.readFileSync(targetPath, 'utf-8');
+                  await this.bot?.sendMessage(chatId, `📖 [Agent OS] Read file: ${cmd.path}\n\n${content.substring(0, 4000)}`);
+                } else {
+                  await this.bot?.sendMessage(chatId, `❌ [Agent OS] Error: File not found at ${cmd.path}`);
+                }
+              } else if (cmd.action === 'delete_file' && targetPath) {
+                if (fs.existsSync(targetPath)) {
+                  fs.unlinkSync(targetPath);
+                  await this.bot?.sendMessage(chatId, `🗑️ [Agent OS] Deleted file: ${cmd.path}`);
+                } else {
+                  await this.bot?.sendMessage(chatId, `❌ [Agent OS] Error: File not found at ${cmd.path}`);
+                }
               }
             } catch (e: any) {
               await this.bot?.sendMessage(chatId, `❌ [Agent OS] Execution Failed: ${e.message}`);

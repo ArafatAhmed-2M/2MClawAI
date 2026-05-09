@@ -94,6 +94,20 @@ export class DiscordBot {
             } else {
               await message.reply(`❌ [Agent OS] Error: File not found at ${cmd.path}`);
             }
+          } else if (cmd.action === 'read_file' && targetPath) {
+            if (fs.existsSync(targetPath)) {
+              const content = fs.readFileSync(targetPath, 'utf-8');
+              await message.reply(`📖 [Agent OS] Read file: ${cmd.path}\n\n${content.substring(0, 2000)}`);
+            } else {
+              await message.reply(`❌ [Agent OS] Error: File not found at ${cmd.path}`);
+            }
+          } else if (cmd.action === 'delete_file' && targetPath) {
+            if (fs.existsSync(targetPath)) {
+              fs.unlinkSync(targetPath);
+              await message.reply(`🗑️ [Agent OS] Deleted file: ${cmd.path}`);
+            } else {
+              await message.reply(`❌ [Agent OS] Error: File not found at ${cmd.path}`);
+            }
           }
         } catch (e: any) {
           await message.reply(`❌ [Agent OS] Execution Failed: ${e.message}`);
