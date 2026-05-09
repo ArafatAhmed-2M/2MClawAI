@@ -1,5 +1,8 @@
-import { Client, GatewayIntentBits, Message, Partials } from 'discord.js';
+import fs from 'fs';
+import path from 'path';
+import { AttachmentBuilder, Client, GatewayIntentBits, Message, Partials } from 'discord.js';
 import { LLMService } from '../llm/LLMService';
+import { globalMemory } from '../memory/LongTermMemory';
 
 export class DiscordBot {
   private client: Client;
@@ -49,84 +52,147 @@ export class DiscordBot {
         await message.channel.sendTyping();
       }
 
-      // Auto-detect the first configured provider — no hardcoded OpenAI fallback
+      // Auto-detect the first configured provider
       const defaultProvider = process.env.DEFAULT_PROVIDER;
       const defaultModel   = process.env.DEFAULT_MODEL;
       const { provider, model } = defaultProvider && defaultModel
         ? { provider: defaultProvider, model: defaultModel }
         : LLMService.getDefaultProviderAndModel();
-      
-      const reply = await LLMService.generateResponse(provider, model, content);
-      
+
+      const rawReply = await LLMService.generateResponse(provider, model, content);
+
       // --- Agentic System Command Interceptor ---
-      let commandStr: string | null = null;
-      const commandMatch = reply.match(/```(?:system_command|json)?\n?([\s\S]*?)\n?```/);
-      
-      if (commandMatch && commandMatch[1].includes('"action"')) {
-          commandStr = commandMatch[1];
-      } else {
-          const fallbackMatch = reply.match(/({[\s\S]*?"action"[\s\S]*})/);
-          if (fallbackMatch) commandStr = fallbackMatch[1];
-      }
+      const { handled, visibleReply } = await this.executeCommand(message, rawReply);
 
-      if (commandStr) {
-        try {
-          const cmd = JSON.parse(commandStr);
-          const path = require('path');
-          const fs = require('fs');
-          const { globalMemory } = require('../memory/LongTermMemory');
-
-          const targetPath = cmd.path ? path.resolve(process.cwd(), cmd.path) : '';
-          
-          if (cmd.action === 'write_file' && targetPath) {
-            fs.mkdirSync(path.dirname(targetPath), { recursive: true });
-            fs.writeFileSync(targetPath, cmd.content || '', 'utf-8');
-            await message.reply(`✅ [Agent OS] File written: ${cmd.path}`);
-          } else if (cmd.action === 'memorize') {
-            globalMemory.addFact(cmd.fact);
-            await message.reply(`🧠 [Agent OS] Fact memorized: ${cmd.fact}`);
-          } else if (cmd.action === 'send_file' && targetPath) {
-            if (fs.existsSync(targetPath)) {
-              await message.reply({ 
-                content: `📂 Here is your file: ${cmd.path}`,
-                files: [targetPath] 
-              });
-            } else {
-              await message.reply(`❌ [Agent OS] Error: File not found at ${cmd.path}`);
-            }
-          } else if (cmd.action === 'read_file' && targetPath) {
-            if (fs.existsSync(targetPath)) {
-              const content = fs.readFileSync(targetPath, 'utf-8');
-              await message.reply(`📖 [Agent OS] Read file: ${cmd.path}\n\n${content.substring(0, 2000)}`);
-            } else {
-              await message.reply(`❌ [Agent OS] Error: File not found at ${cmd.path}`);
-            }
-          } else if (cmd.action === 'delete_file' && targetPath) {
-            if (fs.existsSync(targetPath)) {
-              fs.unlinkSync(targetPath);
-              await message.reply(`🗑️ [Agent OS] Deleted file: ${cmd.path}`);
-            } else {
-              await message.reply(`❌ [Agent OS] Error: File not found at ${cmd.path}`);
-            }
-          }
-        } catch (e: any) {
-          await message.reply(`❌ [Agent OS] Execution Failed: ${e.message}`);
-        }
+      if (!handled) {
+        // Normal reply — split if over Discord's 2000-char limit
+        await this.sendChunked(message, visibleReply || rawReply);
+      } else if (visibleReply) {
+        // Send the clean explanation text (without the JSON block)
+        await this.sendChunked(message, visibleReply);
       }
       // ------------------------------------------
 
-      // Discord max length is 2000 chars, so split if necessary
-      if (reply.length > 2000) {
-        const chunks = reply.match(/[\s\S]{1,1999}/g) || [];
-        for (const chunk of chunks) {
-          await message.reply(chunk);
-        }
-      } else {
-        await message.reply(reply);
-      }
     } catch (err: any) {
       console.error(err);
       await message.reply(`❌ [Agent OS] System Error: ${err.message}`);
     }
+  }
+
+  /**
+   * Parses and executes a system_command block embedded in the LLM reply.
+   * Returns whether a command was handled and the clean visible reply text.
+   */
+  private async executeCommand(
+    message: Message,
+    rawReply: string
+  ): Promise<{ handled: boolean; visibleReply: string }> {
+    const BLOCK_REGEX = /```system_command\s*([\s\S]*?)```/i;
+    const match = rawReply.match(BLOCK_REGEX);
+
+    // No command block — nothing to do
+    if (!match) return { handled: false, visibleReply: rawReply };
+
+    // Strip the JSON block to get the clean conversational text
+    const visibleReply = rawReply.replace(BLOCK_REGEX, '').trim();
+
+    let cmd: Record<string, any>;
+    try {
+      cmd = JSON.parse(match[1].trim());
+    } catch (e) {
+      console.error('[Discord] Failed to parse system_command JSON:', e);
+      return { handled: false, visibleReply };
+    }
+
+    const action: string = (cmd.action || '').toLowerCase();
+
+    try {
+      switch (action) {
+        case 'write_file': {
+          const filePath = this.resolvePath(cmd.path);
+          fs.mkdirSync(path.dirname(filePath), { recursive: true });
+          fs.writeFileSync(filePath, cmd.content ?? '', 'utf-8');
+          console.log(`[Discord] ✅ write_file → ${filePath}`);
+          await message.reply(`✅ [Agent OS] File written: \`${cmd.path}\``);
+          return { handled: true, visibleReply };
+        }
+
+        case 'send_file': {
+          const filePath = this.resolvePath(cmd.path);
+          // Write the file first (it may not exist yet)
+          fs.mkdirSync(path.dirname(filePath), { recursive: true });
+          fs.writeFileSync(filePath, cmd.content ?? '', 'utf-8');
+          console.log(`[Discord] 📤 send_file → ${filePath}`);
+          // Send as attachment
+          const attachment = new AttachmentBuilder(filePath, {
+            name: path.basename(filePath),
+            description: `File created by 2M Claw`
+          });
+          await message.reply({
+            content: `📂 Here is your file: \`${path.basename(filePath)}\``,
+            files: [attachment]
+          });
+          return { handled: true, visibleReply };
+        }
+
+        case 'memorize': {
+          if (cmd.fact) {
+            globalMemory.addFact(cmd.fact);
+            console.log(`[Discord] 🧠 memorized: ${cmd.fact}`);
+            await message.reply(`🧠 [Agent OS] Fact memorized.`);
+          }
+          return { handled: true, visibleReply };
+        }
+
+        case 'read_file': {
+          const filePath = this.resolvePath(cmd.path);
+          if (fs.existsSync(filePath)) {
+            const fileContent = fs.readFileSync(filePath, 'utf-8');
+            const preview = fileContent.substring(0, 1900);
+            await message.reply(`📖 [Agent OS] \`${cmd.path}\`:\n\`\`\`\n${preview}\n\`\`\``);
+          } else {
+            await message.reply(`❌ [Agent OS] File not found: \`${cmd.path}\``);
+          }
+          return { handled: true, visibleReply };
+        }
+
+        case 'delete_file': {
+          const filePath = this.resolvePath(cmd.path);
+          if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+            await message.reply(`🗑️ [Agent OS] Deleted: \`${cmd.path}\``);
+          } else {
+            await message.reply(`❌ [Agent OS] File not found: \`${cmd.path}\``);
+          }
+          return { handled: true, visibleReply };
+        }
+
+        default:
+          console.warn(`[Discord] Unknown action: "${action}"`);
+          return { handled: false, visibleReply };
+      }
+    } catch (err: any) {
+      console.error(`[Discord] Error during "${action}":`, err.message);
+      await message.reply(`❌ [Agent OS] Execution Error (${action}): ${err.message}`);
+      return { handled: true, visibleReply };
+    }
+  }
+
+  /** Splits a long reply into 2000-char chunks for Discord's limit */
+  private async sendChunked(message: Message, text: string) {
+    if (!text) return;
+    if (text.length <= 2000) {
+      await message.reply(text);
+    } else {
+      const chunks = text.match(/[\s\S]{1,1999}/g) || [];
+      for (const chunk of chunks) {
+        await message.reply(chunk);
+      }
+    }
+  }
+
+  private resolvePath(filePath: string): string {
+    if (!filePath) throw new Error('No file path specified in system_command.');
+    return path.isAbsolute(filePath) ? filePath : path.resolve(process.cwd(), filePath);
   }
 }
