@@ -41,35 +41,55 @@ async function runSetup() {
     }
   }
 
-  console.log('Leave blank and press Enter to skip any setting.\n');
+  // --- BOT PLATFORM SELECTION ---
+  console.log('Which bot platform would you like to connect?');
+  console.log('1) Telegram');
+  console.log('2) Discord');
+  console.log('3) Both');
+  console.log('4) Skip for now');
+  const botChoice = await askQuestion('\nEnter choice (1-4): ');
 
-  // Ask for Bot Tokens
-  const telegramToken = await askQuestion('📱 Enter Telegram Bot Token (from @BotFather): ');
-  updateEnv('TELEGRAM_BOT_TOKEN', telegramToken);
+  if (botChoice === '1' || botChoice === '3') {
+    const token = await askQuestion('📱 Enter Telegram Bot Token: ');
+    updateEnv('TELEGRAM_BOT_TOKEN', token);
+  }
+  if (botChoice === '2' || botChoice === '3') {
+    const token = await askQuestion('🎮 Enter Discord Bot Token: ');
+    updateEnv('DISCORD_BOT_TOKEN', token);
+  }
 
-  const discordToken = await askQuestion('🎮 Enter Discord Bot Token: ');
-  updateEnv('DISCORD_BOT_TOKEN', discordToken);
+  // --- AI PROVIDER SELECTION ---
+  console.log('\nWhich AI Provider do you want to use?');
+  console.log('1) Groq (Fastest & Free)');
+  console.log('2) Gemini (Google AI Studio)');
+  console.log('3) OpenRouter (Multiple Models)');
+  console.log('4) OpenAI');
+  console.log('5) Skip / Configure later');
+  const providerChoice = await askQuestion('\nEnter choice (1-5): ');
 
-  console.log('\n--- AI Providers ---');
-  const groqKey = await askQuestion('🚀 Enter Groq API Key (Fastest & Free): ');
-  updateEnv('GROQ_API_KEY', groqKey);
-
-  const geminiKey = await askQuestion('🧠 Enter Gemini API Key (Google AI Studio): ');
-  updateEnv('GEMINI_API_KEY', geminiKey);
-
-  const openrouterKey = await askQuestion('🌐 Enter OpenRouter API Key: ');
-  updateEnv('OPENROUTER_API_KEY', openrouterKey);
-
-  const openaiKey = await askQuestion('🤖 Enter OpenAI API Key: ');
-  updateEnv('OPENAI_API_KEY', openaiKey);
+  if (providerChoice === '1') {
+    const key = await askQuestion('🚀 Enter Groq API Key: ');
+    updateEnv('GROQ_API_KEY', key);
+    updateEnv('DEFAULT_PROVIDER', 'groq');
+  } else if (providerChoice === '2') {
+    const key = await askQuestion('🧠 Enter Gemini API Key: ');
+    updateEnv('GEMINI_API_KEY', key);
+    updateEnv('DEFAULT_PROVIDER', 'gemini');
+  } else if (providerChoice === '3') {
+    const key = await askQuestion('🌐 Enter OpenRouter API Key: ');
+    updateEnv('OPENROUTER_API_KEY', key);
+    updateEnv('DEFAULT_PROVIDER', 'openrouter');
+  } else if (providerChoice === '4') {
+    const key = await askQuestion('🤖 Enter OpenAI API Key: ');
+    updateEnv('OPENAI_API_KEY', key);
+    updateEnv('DEFAULT_PROVIDER', 'openai');
+  }
 
   // Write changes
   fs.writeFileSync(envPath, envContent.trim() + '\n', 'utf-8');
 
   console.log('\n==========================================');
   console.log('✅ Setup Complete! Configuration saved to .env.');
-  console.log('You can also configure more keys anytime via the Web Dashboard at http://localhost:3000');
-  console.log('To start the bot, run: npm run dev');
   console.log('==========================================\n');
 
   rl.close();
