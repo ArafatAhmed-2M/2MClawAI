@@ -142,8 +142,12 @@ document.addEventListener('DOMContentLoaded', () => {
             msgDiv.className = `message ${role}`;
             
             const textDiv = document.createElement('div');
-            textDiv.textContent = text;
-            textDiv.style.whiteSpace = 'pre-wrap';
+            if (role === 'ai') {
+                textDiv.innerHTML = marked.parse(text);
+            } else {
+                textDiv.textContent = text;
+                textDiv.style.whiteSpace = 'pre-wrap';
+            }
             msgDiv.appendChild(textDiv);
             
             if (meta) {

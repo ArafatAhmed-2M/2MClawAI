@@ -17,7 +17,13 @@ export class DashboardServer {
 
     // Serve static frontend files
     const dashboardPath = path.join(__dirname, '../../dashboard');
-    app.use(express.static(dashboardPath));
+    app.use(express.static(dashboardPath, {
+      setHeaders: (res) => {
+        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
+      }
+    }));
 
     // API Routes for Dashboard
     app.get('/api/status', (req, res) => {
