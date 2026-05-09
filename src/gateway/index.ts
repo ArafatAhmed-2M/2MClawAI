@@ -6,6 +6,7 @@ import { AutoUpdater } from '../updater/AutoUpdater';
 import { DiscordBot } from '../bots/DiscordBot';
 import { TelegramBot } from '../bots/TelegramBot';
 import { BotRegistry } from '../bots/BotRegistry';
+import { DreamingEngine } from '../memory/DreamingEngine';
 
 dotenv.config();
 
@@ -16,6 +17,7 @@ export class GatewayManager {
   private autoUpdater: AutoUpdater;
   public discordBot: DiscordBot;
   public telegramBot: TelegramBot;
+  private dreamingEngine: DreamingEngine;
 
   constructor() {
     console.log('🐾 Initializing 2M Claw Gateway...');
@@ -27,6 +29,7 @@ export class GatewayManager {
     this.autoUpdater = new AutoUpdater();
     this.discordBot = new DiscordBot();
     this.telegramBot = new TelegramBot();
+    this.dreamingEngine = new DreamingEngine();
 
     // Register bots so DashboardServer can hot-connect without circular imports
     BotRegistry.setTelegram(this.telegramBot);
@@ -42,6 +45,9 @@ export class GatewayManager {
 
     console.log('🕒 Starting proactive agent scheduler...');
     this.proactiveAgent.start();
+
+    console.log('🌙 Waking up Dreaming Engine...');
+    this.dreamingEngine.start();
 
     // Start Dashboard Web UI
     const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;

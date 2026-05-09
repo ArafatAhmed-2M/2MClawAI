@@ -53,6 +53,79 @@ export class DashboardServer {
         ]);
     });
 
+    // --- A2A Protocol (Agent Identity Card) ---
+    app.get('/.well-known/agent-card.json', (req, res) => {
+        res.json({
+            agent_name: "2M Claw",
+            version: "1.0.0",
+            protocol: "A2A",
+            capabilities: [
+                "read_file",
+                "write_file",
+                "delete_file",
+                "memorize",
+                "send_file"
+            ],
+            endpoints: {
+                execute: "/api/webhook/execute"
+            }
+        });
+    });
+
+    // --- Webhook Ingress for External Tools (Zapier, Github Actions, etc) ---
+    app.post('/api/webhook/execute', async (req, res) => {
+        const { prompt, api_key } = req.body;
+        
+        // Simple security check (could be expanded)
+        const expectedKey = process.env.WEBHOOK_SECRET || 'default-secret-2mclaw';
+        if (api_key !== expectedKey) {
+            return res.status(401).json({ error: 'Unauthorized: Invalid WEBHOOK_SECRET' });
+        }
+
+        if (!prompt) return res.status(400).json({ error: 'No prompt provided.' });
+
+        console.log(`[Webhook] Incoming task received: ${prompt}`);
+        res.json({ status: 'Processing started in background.' });
+
+        try {
+            const defaultProvider = process.env.DEFAULT_PROVIDER;
+            const defaultModel = process.env.DEFAULT_MODEL;
+            const { provider, model } = defaultProvider && defaultModel
+              ? { provider: defaultProvider, model: defaultModel }
+              : LLMService.getDefaultProviderAndModel();
+
+            // Ask the LLM to execute the webhook payload
+            const reply = await LLMService.generateResponse(provider, model, `Webhook Triggered: ${prompt}`);
+            
+            // Execute Agent Commands if any
+            const commandMatch = reply.match(/```(?:system_command|json)?\n?([\s\S]*?)\n?```/);
+            let commandStr = null;
+            if (commandMatch && commandMatch[1].includes('"action"')) {
+                commandStr = commandMatch[1];
+            } else {
+                const fallbackMatch = reply.match(/({[\s\S]*?"action"[\s\S]*})/);
+                if (fallbackMatch) commandStr = fallbackMatch[1];
+            }
+
+            if (commandStr) {
+                const cmd = JSON.parse(commandStr);
+                const targetPath = cmd.path ? path.resolve(process.cwd(), cmd.path) : '';
+                
+                if (cmd.action === 'write_file' && targetPath) {
+                    fs.mkdirSync(path.dirname(targetPath), { recursive: true });
+                    fs.writeFileSync(targetPath, cmd.content || '', 'utf-8');
+                } else if (cmd.action === 'delete_file' && targetPath) {
+                    fs.unlinkSync(targetPath);
+                } else if (cmd.action === 'memorize') {
+                    globalMemory.addFact(cmd.fact);
+                }
+                console.log(`[Webhook] Executed background action: ${cmd.action}`);
+            }
+        } catch (err: any) {
+            console.error('[Webhook] Background execution failed:', err.message);
+        }
+    });
+
     // --- Bot Connect Endpoints (no restart needed) ---
     app.post('/api/telegram/connect', (req, res) => {
         const { token } = req.body;
