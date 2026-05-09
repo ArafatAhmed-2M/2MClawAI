@@ -3,227 +3,309 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2M Claw | Dashboard</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <title>2M Claw | Black Hole OS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="sidebar">
         <div class="brand">
-            <h1>2M Claw 🐾</h1>
-            <p>Ecosystem Dashboard</p>
+            <i class='bx bxl-sketch'></i>
+            <h1>2M Claw</h1>
         </div>
         <nav>
-            <a href="#" class="active" id="nav-chat">Conversation History</a>
-            <a href="#" id="nav-skills">Skill Browser</a>
-            <a href="#" id="nav-cron">Scheduled Tasks</a>
-            <a href="#" id="nav-settings">Settings</a>
+            <div class="nav-group">Workspace</div>
+            <a href="#" id="nav-overview"><i class='bx bx-grid-alt'></i> Overview</a>
+            <a href="#" class="active" id="nav-chat"><i class='bx bx-message-square-dots'></i> Chat</a>
+            
+            <div class="nav-group">Agent OS</div>
+            <a href="#" id="nav-agents"><i class='bx bx-bot'></i> Agents</a>
+            <a href="#" id="nav-skills"><i class='bx bx-bolt-circle'></i> Skills</a>
+            <a href="#" id="nav-cron"><i class='bx bx-timer'></i> Automation</a>
+            
+            <div class="nav-group">System</div>
+            <a href="#" id="nav-settings"><i class='bx bx-cog'></i> Config</a>
+            <a href="#" id="nav-logs"><i class='bx bx-list-ol'></i> Logs</a>
         </nav>
         <div class="llm-switcher">
-            <label for="llm-select">Active Model:</label>
+            <label for="llm-select">Active Model</label>
             <select id="llm-select">
-                <option value="openai">OpenAI (GPT-4)</option>
-                <option value="claude">Anthropic (Claude 3)</option>
-                <option value="gemini">Google (Gemini Pro)</option>
-                <option value="groq">Groq (Llama 3)</option>
-                <option value="ollama">Ollama (Local)</option>
+                <!-- Dynamically populated -->
             </select>
         </div>
     </div>
 
     <main class="content">
-        <!-- Chat History View -->
+        <!-- Chat View -->
         <section id="view-chat" class="view active-view">
-            <header>
-                <h2>Conversation History</h2>
-                <span class="status online">● Gateway Online</span>
+            <header class="view-header">
+                <h2><i class='bx bx-message-square-dots'></i> Assistant Chat</h2>
+                <span class="status online"><div class="status-dot"></div> Gateway Online</span>
             </header>
-            <div class="chat-box" id="chat-box">
-                <div class="message system">2M Claw initialization complete. Awaiting connections...</div>
+            
+            <div class="chat-container" id="chat-box">
+                <!-- Messages will appear here -->
+                
+                <!-- Empty State Splash -->
+                <div class="empty-state" id="empty-state">
+                    <div class="assistant-icon"><i class='bx bx-bot'></i></div>
+                    <h3>Assistant</h3>
+                    <p>Ready to chat. Ask me to write code, edit files, or manage your system.</p>
+                    
+                    <div class="quick-actions">
+                        <button class="quick-action-chip"><i class='bx bx-help-circle'></i> What can you do?</button>
+                        <button class="quick-action-chip"><i class='bx bx-file'></i> Edit my Config</button>
+                        <button class="quick-action-chip"><i class='bx bx-pulse'></i> Check system health</button>
+                    </div>
+                </div>
             </div>
-            <div class="chat-input-area">
-                <input type="text" id="chat-input" placeholder="Send a message to the AI Gateway...">
-                <button id="chat-send-btn">Send</button>
+
+            <div class="input-wrapper">
+                <div class="chat-input-area">
+                    <div class="input-actions">
+                        <button class="input-btn" title="Upload File (Coming Soon)"><i class='bx bx-paperclip'></i></button>
+                        <button class="input-btn" title="Voice Mode (Coming Soon)"><i class='bx bx-microphone'></i></button>
+                    </div>
+                    <input type="text" id="chat-input" placeholder="Message Assistant (Enter to send)...">
+                    <button id="chat-send-btn" class="send-btn"><i class='bx bxs-send'></i></button>
+                </div>
             </div>
         </section>
 
-        <!-- Skill Browser View -->
+        <!-- Overview View -->
+        <section id="view-overview" class="view">
+            <header class="view-header">
+                <h2><i class='bx bx-grid-alt'></i> System Overview</h2>
+            </header>
+            <div class="standard-padding">
+                <div class="grid-container">
+                    <div class="card">
+                        <h3><i class='bx bx-heart'></i> Health Status</h3>
+                        <p>All core systems and entry points are running optimally. Gateway is securely connected to the backend.</p>
+                        <span class="status online" style="display:inline-flex;"><div class="status-dot"></div> Healthy</span>
+                    </div>
+                    <div class="card">
+                        <h3><i class='bx bx-data'></i> Memory Usage</h3>
+                        <p>LongTermMemory cluster is initialized. 1024 vectors loaded.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Skills View -->
         <section id="view-skills" class="view">
-            <header>
-                <h2>Skill Browser</h2>
+            <header class="view-header">
+                <h2><i class='bx bx-bolt-circle'></i> Skill Browser</h2>
                 <button class="btn-primary">Browse Web Skills</button>
             </header>
-            <div class="grid-container">
-                <div class="card">
-                    <h3>Web Search</h3>
-                    <p>Allows 2M Claw to search the internet via DuckDuckGo.</p>
-                    <button class="btn-outline">Installed</button>
+            <div class="standard-padding">
+                <div class="grid-container">
+                    <div class="card">
+                        <h3><i class='bx bx-globe'></i> Web Search</h3>
+                        <p>Allows 2M Claw to search the internet via DuckDuckGo.</p>
+                        <button class="btn-outline">Installed</button>
+                    </div>
+                    <div class="card">
+                        <h3><i class='bx bx-terminal'></i> File Editor</h3>
+                        <p>Agentic access to read and rewrite system files on command.</p>
+                        <button class="btn-primary">Core Skill</button>
+                    </div>
                 </div>
-                <div class="card">
-                    <h3>Home Assistant</h3>
-                    <p>Control smart home devices.</p>
-                    <button class="btn-accent">Install</button>
+            </div>
+        </section>
+        
+        <!-- Agents View -->
+        <section id="view-agents" class="view">
+            <header class="view-header">
+                <h2><i class='bx bx-bot'></i> Sub-Agents</h2>
+                <button class="btn-primary">+ Create Agent</button>
+            </header>
+            <div class="standard-padding">
+                <div class="empty-state" style="position: relative; top: 10%; transform: none; left: 0; align-items: flex-start; text-align: left;">
+                    <h3>No sub-agents active.</h3>
+                    <p>Create dedicated agents to handle specific workflows in the background.</p>
                 </div>
             </div>
         </section>
 
         <!-- Scheduled Tasks View -->
         <section id="view-cron" class="view">
-            <header>
-                <h2>Scheduled Tasks (Proactive Mode)</h2>
+            <header class="view-header">
+                <h2><i class='bx bx-timer'></i> Automation & Cron Jobs</h2>
                 <button class="btn-primary">+ New Task</button>
             </header>
-            <div class="list-container">
-                <div class="list-item">
-                    <div>
-                        <h4>Morning Digest</h4>
-                        <p class="meta">Schedule: 0 9 * * * (Daily at 9:00 AM)</p>
+            <div class="standard-padding">
+                <div class="list-container">
+                    <div class="list-item">
+                        <div>
+                            <h4 style="font-size:1.1rem;margin-bottom:0.3rem;"><i class='bx bx-news'></i> Morning Digest</h4>
+                            <p class="meta" style="font-size:0.85rem;">Schedule: 0 9 * * * (Daily at 9:00 AM)</p>
+                        </div>
+                        <label class="switch">
+                            <input type="checkbox" checked>
+                            <span class="slider round"></span>
+                        </label>
                     </div>
-                    <label class="switch">
-                        <input type="checkbox" checked>
-                        <span class="slider round"></span>
-                    </label>
                 </div>
             </div>
         </section>
+
         <!-- Settings View -->
         <section id="view-settings" class="view">
-            <header>
-                <h2>Settings & API Keys</h2>
-                <button class="btn-primary" id="save-keys-btn">Save Changes</button>
+            <header class="view-header">
+                <h2><i class='bx bx-cog'></i> Config & API Keys</h2>
+                <button class="btn-primary" id="save-keys-btn">Save Configuration</button>
             </header>
-            <div class="list-container">
-                <div class="list-item" style="flex-direction: column; align-items: flex-start; gap: 1rem;">
-                    <h3>LLM Providers</h3>
-                    <p class="meta" style="margin-top: 0;">Enter your API keys below to enable different models.</p>
-                    
-                    <div style="width: 100%; display: flex; flex-direction: column; gap: 1.5rem; margin-top: 1rem;">
-                        <!-- OpenAI -->
-                        <div style="display:flex; gap: 1rem;">
-                            <div style="flex: 1;">
-                                <label style="display:block; margin-bottom: 0.5rem;">OpenAI API Key</label>
-                                <input type="password" id="key-openai" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-dark); color: white;" placeholder="sk-...">
+            <div class="standard-padding">
+                <div class="list-container">
+                    <div class="list-item" style="flex-direction: column; align-items: flex-start; gap: 1rem;">
+                        <h3 style="font-size:1.2rem;display:flex;align-items:center;gap:0.5rem;"><i class='bx bx-key'></i> API Providers</h3>
+                        <p class="meta" style="margin-top: 0;font-size:0.9rem;">Configure endpoints and models for inference.</p>
+                        
+                        <div style="width: 100%; display: flex; flex-direction: column; gap: 1.5rem; margin-top: 1rem;">
+                            <!-- OpenAI -->
+                            <div style="display:flex; gap: 1rem;">
+                                <div style="flex: 1;">
+                                    <label style="display:block; margin-bottom: 0.5rem; font-size:0.85rem; color:var(--text-muted);">OpenAI API Key</label>
+                                    <input type="password" id="key-openai" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-void); color: white; outline:none;">
+                                </div>
+                                <div style="flex: 1;">
+                                    <label style="display:block; margin-bottom: 0.5rem; font-size:0.85rem; color:var(--text-muted);">Models</label>
+                                    <input type="text" id="models-openai" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-void); color: white; outline:none;" placeholder="gpt-4o,gpt-5-turbo">
+                                </div>
                             </div>
-                            <div style="flex: 1;">
-                                <label style="display:block; margin-bottom: 0.5rem;">Models</label>
-                                <input type="text" id="models-openai" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-dark); color: white;" placeholder="gpt-4o,gpt-5-turbo">
+                            <!-- Anthropic -->
+                            <div style="display:flex; gap: 1rem;">
+                                <div style="flex: 1;">
+                                    <label style="display:block; margin-bottom: 0.5rem; font-size:0.85rem; color:var(--text-muted);">Anthropic (Claude) API Key</label>
+                                    <input type="password" id="key-claude" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-void); color: white; outline:none;">
+                                </div>
+                                <div style="flex: 1;">
+                                    <label style="display:block; margin-bottom: 0.5rem; font-size:0.85rem; color:var(--text-muted);">Models</label>
+                                    <input type="text" id="models-claude" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-void); color: white; outline:none;" placeholder="claude-3-opus,claude-3-sonnet">
+                                </div>
                             </div>
-                        </div>
-                        <!-- Anthropic -->
-                        <div style="display:flex; gap: 1rem;">
-                            <div style="flex: 1;">
-                                <label style="display:block; margin-bottom: 0.5rem;">Anthropic (Claude) API Key</label>
-                                <input type="password" id="key-claude" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-dark); color: white;" placeholder="sk-ant-...">
+                            <!-- Gemini -->
+                            <div style="display:flex; gap: 1rem;">
+                                <div style="flex: 1;">
+                                    <label style="display:block; margin-bottom: 0.5rem; font-size:0.85rem; color:var(--text-muted);">Google (Gemini) API Key</label>
+                                    <input type="password" id="key-gemini" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-void); color: white; outline:none;">
+                                </div>
+                                <div style="flex: 1;">
+                                    <label style="display:block; margin-bottom: 0.5rem; font-size:0.85rem; color:var(--text-muted);">Models</label>
+                                    <input type="text" id="models-gemini" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-void); color: white; outline:none;" placeholder="gemini-3.1-pro-preview...">
+                                </div>
                             </div>
-                            <div style="flex: 1;">
-                                <label style="display:block; margin-bottom: 0.5rem;">Models</label>
-                                <input type="text" id="models-claude" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-dark); color: white;" placeholder="claude-3-opus,claude-3-sonnet">
+                            <!-- Groq -->
+                            <div style="display:flex; gap: 1rem;">
+                                <div style="flex: 1;">
+                                    <label style="display:block; margin-bottom: 0.5rem; font-size:0.85rem; color:var(--text-muted);">Groq API Key</label>
+                                    <input type="password" id="key-groq" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-void); color: white; outline:none;">
+                                </div>
+                                <div style="flex: 1;">
+                                    <label style="display:block; margin-bottom: 0.5rem; font-size:0.85rem; color:var(--text-muted);">Models</label>
+                                    <input type="text" id="models-groq" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-void); color: white; outline:none;" placeholder="llama3-70b-8192...">
+                                </div>
                             </div>
-                        </div>
-                        <!-- Gemini -->
-                        <div style="display:flex; gap: 1rem;">
-                            <div style="flex: 1;">
-                                <label style="display:block; margin-bottom: 0.5rem;">Google (Gemini) API Key</label>
-                                <input type="password" id="key-gemini" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-dark); color: white;" placeholder="AIza...">
+                            <!-- Ollama -->
+                            <div style="display:flex; gap: 1rem;">
+                                <div style="flex: 1;">
+                                    <label style="display:block; margin-bottom: 0.5rem; font-size:0.85rem; color:var(--text-muted);">Ollama Endpoint URL</label>
+                                    <input type="text" id="key-ollama" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-void); color: white; outline:none;" placeholder="http://localhost:11434">
+                                </div>
+                                <div style="flex: 1;">
+                                    <label style="display:block; margin-bottom: 0.5rem; font-size:0.85rem; color:var(--text-muted);">Models</label>
+                                    <input type="text" id="models-ollama" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-void); color: white; outline:none;" placeholder="llama3,mistral">
+                                </div>
                             </div>
-                            <div style="flex: 1;">
-                                <label style="display:block; margin-bottom: 0.5rem;">Models</label>
-                                <input type="text" id="models-gemini" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-dark); color: white;" placeholder="gemini-3.1-pro-preview...">
+                            <!-- OpenRouter -->
+                            <div style="display:flex; gap: 1rem;">
+                                <div style="flex: 1;">
+                                    <label style="display:block; margin-bottom: 0.5rem; font-size:0.85rem; color:var(--text-muted);">OpenRouter API Key</label>
+                                    <input type="password" id="key-openrouter" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-void); color: white; outline:none;">
+                                </div>
+                                <div style="flex: 1;">
+                                    <label style="display:block; margin-bottom: 0.5rem; font-size:0.85rem; color:var(--text-muted);">Models</label>
+                                    <input type="text" id="models-openrouter" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-void); color: white; outline:none;" placeholder="nvidia/nemotron-3...">
+                                </div>
                             </div>
-                        </div>
-                        <!-- Groq -->
-                        <div style="display:flex; gap: 1rem;">
-                            <div style="flex: 1;">
-                                <label style="display:block; margin-bottom: 0.5rem;">Groq API Key</label>
-                                <input type="password" id="key-groq" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-dark); color: white;" placeholder="gsk_...">
+                            <!-- DeepSeek -->
+                            <div style="display:flex; gap: 1rem;">
+                                <div style="flex: 1;">
+                                    <label style="display:block; margin-bottom: 0.5rem; font-size:0.85rem; color:var(--text-muted);">DeepSeek API Key</label>
+                                    <input type="password" id="key-deepseek" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-void); color: white; outline:none;">
+                                </div>
+                                <div style="flex: 1;">
+                                    <label style="display:block; margin-bottom: 0.5rem; font-size:0.85rem; color:var(--text-muted);">Models</label>
+                                    <input type="text" id="models-deepseek" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-void); color: white; outline:none;" placeholder="deepseek-chat...">
+                                </div>
                             </div>
-                            <div style="flex: 1;">
-                                <label style="display:block; margin-bottom: 0.5rem;">Models</label>
-                                <input type="text" id="models-groq" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-dark); color: white;" placeholder="llama3-70b-8192...">
+                            <!-- Cohere -->
+                            <div style="display:flex; gap: 1rem;">
+                                <div style="flex: 1;">
+                                    <label style="display:block; margin-bottom: 0.5rem; font-size:0.85rem; color:var(--text-muted);">Cohere API Key</label>
+                                    <input type="password" id="key-cohere" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-void); color: white; outline:none;">
+                                </div>
+                                <div style="flex: 1;">
+                                    <label style="display:block; margin-bottom: 0.5rem; font-size:0.85rem; color:var(--text-muted);">Models</label>
+                                    <input type="text" id="models-cohere" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-void); color: white; outline:none;" placeholder="command-r-plus...">
+                                </div>
                             </div>
-                        </div>
-                        <!-- Ollama -->
-                        <div style="display:flex; gap: 1rem;">
-                            <div style="flex: 1;">
-                                <label style="display:block; margin-bottom: 0.5rem;">Ollama Endpoint URL</label>
-                                <input type="text" id="key-ollama" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-dark); color: white;" placeholder="http://localhost:11434">
+                            <!-- Hugging Face -->
+                            <div style="display:flex; gap: 1rem;">
+                                <div style="flex: 1;">
+                                    <label style="display:block; margin-bottom: 0.5rem; font-size:0.85rem; color:var(--text-muted);">Hugging Face Token</label>
+                                    <input type="password" id="key-hf" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-void); color: white; outline:none;">
+                                </div>
+                                <div style="flex: 1;">
+                                    <label style="display:block; margin-bottom: 0.5rem; font-size:0.85rem; color:var(--text-muted);">Models</label>
+                                    <input type="text" id="models-hf" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-void); color: white; outline:none;" placeholder="meta-llama/Llama-3...">
+                                </div>
                             </div>
-                            <div style="flex: 1;">
-                                <label style="display:block; margin-bottom: 0.5rem;">Models</label>
-                                <input type="text" id="models-ollama" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-dark); color: white;" placeholder="llama3,mistral">
+                            <!-- Together AI -->
+                            <div style="display:flex; gap: 1rem;">
+                                <div style="flex: 1;">
+                                    <label style="display:block; margin-bottom: 0.5rem; font-size:0.85rem; color:var(--text-muted);">Together AI API Key</label>
+                                    <input type="password" id="key-together" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-void); color: white; outline:none;">
+                                </div>
+                                <div style="flex: 1;">
+                                    <label style="display:block; margin-bottom: 0.5rem; font-size:0.85rem; color:var(--text-muted);">Models</label>
+                                    <input type="text" id="models-together" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-void); color: white; outline:none;" placeholder="meta-llama/Llama-3...">
+                                </div>
                             </div>
-                        </div>
-                        <!-- OpenRouter -->
-                        <div style="display:flex; gap: 1rem;">
-                            <div style="flex: 1;">
-                                <label style="display:block; margin-bottom: 0.5rem;">OpenRouter API Key</label>
-                                <input type="password" id="key-openrouter" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-dark); color: white;" placeholder="sk-or-v1-...">
-                            </div>
-                            <div style="flex: 1;">
-                                <label style="display:block; margin-bottom: 0.5rem;">Models</label>
-                                <input type="text" id="models-openrouter" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-dark); color: white;" placeholder="nvidia/nemotron-3...">
-                            </div>
-                        </div>
-                        <!-- DeepSeek -->
-                        <div style="display:flex; gap: 1rem;">
-                            <div style="flex: 1;">
-                                <label style="display:block; margin-bottom: 0.5rem;">DeepSeek API Key</label>
-                                <input type="password" id="key-deepseek" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-dark); color: white;" placeholder="sk-...">
-                            </div>
-                            <div style="flex: 1;">
-                                <label style="display:block; margin-bottom: 0.5rem;">Models</label>
-                                <input type="text" id="models-deepseek" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-dark); color: white;" placeholder="deepseek-chat...">
-                            </div>
-                        </div>
-                        <!-- Cohere -->
-                        <div style="display:flex; gap: 1rem;">
-                            <div style="flex: 1;">
-                                <label style="display:block; margin-bottom: 0.5rem;">Cohere API Key</label>
-                                <input type="password" id="key-cohere" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-dark); color: white;" placeholder="...">
-                            </div>
-                            <div style="flex: 1;">
-                                <label style="display:block; margin-bottom: 0.5rem;">Models</label>
-                                <input type="text" id="models-cohere" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-dark); color: white;" placeholder="command-r-plus...">
-                            </div>
-                        </div>
-                        <!-- Hugging Face -->
-                        <div style="display:flex; gap: 1rem;">
-                            <div style="flex: 1;">
-                                <label style="display:block; margin-bottom: 0.5rem;">Hugging Face Token</label>
-                                <input type="password" id="key-hf" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-dark); color: white;" placeholder="hf_...">
-                            </div>
-                            <div style="flex: 1;">
-                                <label style="display:block; margin-bottom: 0.5rem;">Models</label>
-                                <input type="text" id="models-hf" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-dark); color: white;" placeholder="meta-llama/Llama-3...">
-                            </div>
-                        </div>
-                        <!-- Together AI -->
-                        <div style="display:flex; gap: 1rem;">
-                            <div style="flex: 1;">
-                                <label style="display:block; margin-bottom: 0.5rem;">Together AI API Key</label>
-                                <input type="password" id="key-together" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-dark); color: white;" placeholder="...">
-                            </div>
-                            <div style="flex: 1;">
-                                <label style="display:block; margin-bottom: 0.5rem;">Models</label>
-                                <input type="text" id="models-together" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-dark); color: white;" placeholder="meta-llama/Llama-3...">
-                            </div>
-                        </div>
-                        <!-- Custom -->
-                        <div style="display:flex; gap: 1rem;">
-                            <div style="flex: 1;">
-                                <label style="display:block; margin-bottom: 0.5rem;">Custom Base URL / API Key</label>
-                                <input type="text" id="key-custom-url" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-dark); color: white; margin-bottom: 0.5rem;" placeholder="https://api.your-custom.com/v1">
-                                <input type="password" id="key-custom-key" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-dark); color: white;" placeholder="API Key...">
-                            </div>
-                            <div style="flex: 1;">
-                                <label style="display:block; margin-bottom: 0.5rem;">Models</label>
-                                <input type="text" id="models-custom" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-dark); color: white;" placeholder="custom-model-1...">
+                            <!-- Custom -->
+                            <div style="display:flex; gap: 1rem;">
+                                <div style="flex: 1;">
+                                    <label style="display:block; margin-bottom: 0.5rem; font-size:0.85rem; color:var(--text-muted);">Custom Base URL / API Key</label>
+                                    <input type="text" id="key-custom-url" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-void); color: white; margin-bottom: 0.5rem; outline:none;" placeholder="https://api.your-custom.com/v1">
+                                    <input type="password" id="key-custom-key" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-void); color: white; outline:none;" placeholder="API Key...">
+                                </div>
+                                <div style="flex: 1;">
+                                    <label style="display:block; margin-bottom: 0.5rem; font-size:0.85rem; color:var(--text-muted);">Models</label>
+                                    <input type="text" id="models-custom" style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid var(--border); background: var(--bg-void); color: white; outline:none;" placeholder="custom-model-1...">
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </section>
+
+        <!-- Logs View -->
+        <section id="view-logs" class="view">
+            <header class="view-header">
+                <h2><i class='bx bx-list-ol'></i> System Logs</h2>
+                <button class="btn-outline"><i class='bx bx-refresh'></i> Refresh</button>
+            </header>
+            <div class="standard-padding">
+                <div class="empty-state" style="position: relative; top: 10%; transform: none; left: 0; align-items: flex-start; text-align: left;">
+                    <h3>No errors reported.</h3>
+                    <p>The system is operating securely within the 2M Claw Gateway.</p>
+                </div>
+            </div>
+        </section>
+
     </main>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script src="/socket.io/socket.io.js"></script>

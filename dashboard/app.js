@@ -136,8 +136,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const chatInput = document.getElementById('chat-input');
         const sendBtn = document.getElementById('chat-send-btn');
         const chatBox = document.getElementById('chat-box');
+        const emptyState = document.getElementById('empty-state');
 
         const appendMessage = (role, text, meta) => {
+            if (emptyState && !emptyState.classList.contains('hidden')) {
+                emptyState.classList.add('hidden');
+            }
+            
             const msgDiv = document.createElement('div');
             msgDiv.className = `message ${role}`;
             
@@ -191,6 +196,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (e.key === 'Enter') sendMessage();
             });
         }
+        
+        // Quick Action Chips
+        const quickActionChips = document.querySelectorAll('.quick-action-chip');
+        quickActionChips.forEach(chip => {
+            chip.addEventListener('click', (e) => {
+                chatInput.value = e.target.textContent.trim();
+                sendMessage();
+            });
+        });
 
         socket.on('chat_status', (data) => {
             if (data.status === 'thinking') {
