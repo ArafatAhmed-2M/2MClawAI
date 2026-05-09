@@ -1,23 +1,71 @@
-# 2M Claw Windows Setup Guide
+# 🛠️ 2M Claw: Windows Setup Guide
 
-## Requirements
-1. **Windows 10 or 11**
-2. **Node.js**: Version 18.x or higher
+This guide ensures a smooth installation of the 2M Claw Agentic OS on Windows 10/11.
 
-## Installation
-1. Clone the repository: `git clone https://github.com/ArafatAhmed-2M/2MClawAI.git`
-2. Navigate to the folder: `cd 2MClawAI`
-3. Right-click on `setup/install-windows.ps1` and select **Run with PowerShell**.
-4. The setup will automatically:
-   - Verify Node.js is installed
-   - Install all `npm` dependencies
-   - Compile the TypeScript backend
-   - Create your `.env` configuration file
+---
 
-## Starting 2M Claw
-After installation, open your terminal (PowerShell or CMD) in the project folder and run:
+## 📋 Prerequisites
+
+Before starting, ensure you have the following installed:
+1. **Node.js (v18 or higher)**: [Download here](https://nodejs.org/)
+2. **Git**: [Download here](https://git-scm.com/)
+3. **PowerShell 5.1+**: (Built into Windows)
+
+## 🚀 One-Click Installation (Recommended)
+
+2M Claw comes with a native PowerShell installer that handles everything for you.
+
+1. **Clone the Repo**:
+   ```powershell
+   git clone https://github.com/ArafatAhmed-2M/2MClawAI.git
+   cd 2MClawAI
+   ```
+
+2. **Run the Installer**:
+   - Locate the `setup/install-windows.ps1` file.
+   - Right-click and select **Run with PowerShell**.
+   - *If prompted about execution policies, type `Y` to allow the script to run.*
+
+3. **Follow the Wizard**:
+   The installer will:
+   - Check your Node/NPM versions.
+   - Install all required dependencies.
+   - Create your `.env` configuration file.
+   - Open the Dashboard at `http://localhost:3000`.
+
+## ⚙️ Manual Setup
+
+If you prefer to set up manually:
+
+1. **Install Dependencies**:
+   ```bash
+   npm install
+   ```
+
+2. **Configure Environment**:
+   - Copy `.env.example` to `.env`.
+   - Add your API keys (OpenAI, Anthropic, etc.).
+
+3. **Build & Run**:
+   ```bash
+   npm run build
+   # To start in production mode
+   npm start
+   # To start in development mode
+   npm run dev
+   ```
+
+## 🩺 Verifying Success
+
+Once running, run the diagnostic tool to confirm everything is perfect:
 ```bash
-npm start
+npm run doctor
 ```
 
-The Web Dashboard will automatically start at `http://localhost:3000`. Open this URL in your web browser.
+## ❓ Troubleshooting
+
+- **Port 3000 in use**: Change the `PORT` variable in your `.env` file.
+- **Execution Policy Error**: Run `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser` in PowerShell as Administrator.
+
+---
+*Back to [README.md](../README.md)*

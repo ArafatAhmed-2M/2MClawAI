@@ -25,5 +25,11 @@ If applicable, add screenshots to help explain your problem.
 
 **Environment:**
  - OS: [e.g. Windows 11]
- - Node Version: [e.g. v18.17.0]
- - 2M Claw Version: [e.g. 1.0.0]
+ - Node Version: [e.g. v20.0.0]
+ - 2M Claw Version: [e.g. 1.1.0]
+
+**System Doctor Output:**
+(Run `npm run doctor` and paste the output here)
+
+**Additional context**
+Add any other context about the problem here.
