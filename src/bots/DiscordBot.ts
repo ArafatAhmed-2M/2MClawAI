@@ -48,9 +48,13 @@ export class DiscordBot {
       if ('sendTyping' in message.channel) {
         await message.channel.sendTyping();
       }
-      // Default to OpenAI / Claude
-      const provider = process.env.DEFAULT_PROVIDER || 'openai';
-      const model = process.env.DEFAULT_MODEL || 'gpt-4o';
+
+      // Auto-detect the first configured provider — no hardcoded OpenAI fallback
+      const defaultProvider = process.env.DEFAULT_PROVIDER;
+      const defaultModel   = process.env.DEFAULT_MODEL;
+      const { provider, model } = defaultProvider && defaultModel
+        ? { provider: defaultProvider, model: defaultModel }
+        : LLMService.getDefaultProviderAndModel();
       
       const reply = await LLMService.generateResponse(provider, model, content);
       

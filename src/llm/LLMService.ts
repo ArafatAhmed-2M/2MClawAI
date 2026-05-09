@@ -28,6 +28,61 @@ ${facts || 'No facts memorized yet.'}
 When you output this block, the backend will automatically intercept it. Do not use this block for normal conversational replies, ONLY when modifying the file system or memorizing a new fact.`;
   }
 
+  /**
+   * Returns the first configured provider+model based on what API keys are set.
+   * Priority: openrouter > groq > deepseek > together > claude > gemini > cohere > huggingface > ollama > openai > custom
+   * Falls back to openai if nothing is found (will give a clear key-missing error).
+   */
+  public static getDefaultProviderAndModel(): { provider: string; model: string } {
+    const env = process.env;
+    if (env.OPENROUTER_API_KEY && env.OPENROUTER_API_KEY.length > 10 && !env.OPENROUTER_API_KEY.includes('your_')) {
+      const model = (env.OPENROUTER_MODELS || 'openai/gpt-4o-mini').split(',')[0].trim();
+      return { provider: 'openrouter', model };
+    }
+    if (env.GROQ_API_KEY && env.GROQ_API_KEY.length > 10 && !env.GROQ_API_KEY.includes('your_')) {
+      const model = (env.GROQ_MODELS || 'llama3-70b-8192').split(',')[0].trim();
+      return { provider: 'groq', model };
+    }
+    if (env.DEEPSEEK_API_KEY && env.DEEPSEEK_API_KEY.length > 10 && !env.DEEPSEEK_API_KEY.includes('your_')) {
+      const model = (env.DEEPSEEK_MODELS || 'deepseek-chat').split(',')[0].trim();
+      return { provider: 'deepseek', model };
+    }
+    if (env.TOGETHER_API_KEY && env.TOGETHER_API_KEY.length > 10 && !env.TOGETHER_API_KEY.includes('your_')) {
+      const model = (env.TOGETHER_MODELS || 'meta-llama/Llama-3-70b-chat-hf').split(',')[0].trim();
+      return { provider: 'together', model };
+    }
+    if (env.CLAUDE_API_KEY && env.CLAUDE_API_KEY.length > 10 && !env.CLAUDE_API_KEY.includes('your_')) {
+      const model = (env.CLAUDE_MODELS || 'claude-3-sonnet').split(',')[0].trim();
+      return { provider: 'claude', model };
+    }
+    if (env.GEMINI_API_KEY && env.GEMINI_API_KEY.length > 10 && !env.GEMINI_API_KEY.includes('your_')) {
+      const model = (env.GEMINI_MODELS || 'gemini-3-flash-preview').split(',')[0].trim();
+      return { provider: 'gemini', model };
+    }
+    if (env.COHERE_API_KEY && env.COHERE_API_KEY.length > 10 && !env.COHERE_API_KEY.includes('your_')) {
+      const model = (env.COHERE_MODELS || 'command-r').split(',')[0].trim();
+      return { provider: 'cohere', model };
+    }
+    if (env.HF_API_KEY && env.HF_API_KEY.length > 10 && !env.HF_API_KEY.includes('your_')) {
+      const model = (env.HF_MODELS || 'meta-llama/Llama-3-70b-chat-hf').split(',')[0].trim();
+      return { provider: 'huggingface', model };
+    }
+    if (env.OLLAMA_ENDPOINT && env.OLLAMA_ENDPOINT.length > 5) {
+      const model = (env.OLLAMA_MODELS || 'llama3').split(',')[0].trim();
+      return { provider: 'ollama', model };
+    }
+    if (env.CUSTOM_BASE_URL && env.CUSTOM_BASE_URL.length > 5) {
+      const model = (env.CUSTOM_MODELS || 'custom').split(',')[0].trim();
+      return { provider: 'custom', model };
+    }
+    if (env.OPENAI_API_KEY && env.OPENAI_API_KEY.length > 10 && !env.OPENAI_API_KEY.includes('your_')) {
+      const model = (env.OPENAI_MODELS || 'gpt-4o').split(',')[0].trim();
+      return { provider: 'openai', model };
+    }
+    // Nothing configured — return openai so the user gets a clear "key missing" error
+    return { provider: 'openai', model: 'gpt-4o' };
+  }
+
   public static async generateResponse(provider: string, model: string, prompt: string): Promise<string> {
     try {
       switch (provider) {
